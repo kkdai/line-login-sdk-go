@@ -50,7 +50,7 @@ func randStringRunes(n int) string {
 
 //GetWebLoinURL - LINE LOGIN 2.1 get LINE Login URL
 func GetWebLoinURL(clientID, redirectURL, state, scope, nounce, chatbotPrompt string) string {
-	req, err := http.NewRequest("GET", "https://access.line.me/oauth2/v2.1/authorize", nil)
+	req, err := http.NewRequest("GET", getAuthAPI(), nil)
 	if err != nil {
 		log.Print(err)
 		os.Exit(1)
@@ -78,7 +78,7 @@ func GenerateNounce() string {
 func RequestLoginToken(code, redirectURL, clientID, clientSecret string) (*TokenResponse, error) {
 	qURL := url.QueryEscape(redirectURL)
 	body := strings.NewReader(fmt.Sprintf("grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s", code, qURL, clientID, clientSecret))
-	req, err := http.NewRequest("POST", "https://api.line.me/oauth2/v2.1/token", body)
+	req, err := http.NewRequest("POST", getTokenAPI(), body)
 	if err != nil {
 		// handle err
 		return nil, err
