@@ -1,0 +1,10 @@
+language: go
+
+go:
+    - "1.10"
+    - tip
+
+before_install:
+
+script:
+    - go test -bench=. -benchmem ./...
