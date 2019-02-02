@@ -8,4 +8,4 @@ LINE API Services in Go
 License
 ---------------
 
-This package is licensed under MIT license. See LICENSE for details.
+See [LICENSE.txt](LICENSE.txt)
