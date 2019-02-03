@@ -19,6 +19,7 @@ const (
 
 // Client type
 type Client struct {
+	channelID     string
 	channelSecret string
 	channelToken  string
 	endpointBase  *url.URL     // default APIEndpointBase
@@ -29,16 +30,16 @@ type Client struct {
 type ClientOption func(*Client) error
 
 // New returns a new bot client instance.
-func New(channelSecret, channelToken string, options ...ClientOption) (*Client, error) {
+func New(channelID, channelSecret string, options ...ClientOption) (*Client, error) {
+	if channelID == "" {
+		return nil, errors.New("missing channel ID")
+	}
 	if channelSecret == "" {
 		return nil, errors.New("missing channel secret")
 	}
-	if channelToken == "" {
-		return nil, errors.New("missing channel access token")
-	}
 	c := &Client{
+		channelID:     channelID,
 		channelSecret: channelSecret,
-		channelToken:  channelToken,
 		httpClient:    http.DefaultClient,
 	}
 	for _, option := range options {

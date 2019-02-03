@@ -1,6 +1,7 @@
 package apiservice
 
 import (
+	"context"
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -16,6 +17,42 @@ import (
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+func (client *Client) GetAccessToken(redirectURL, code string) *GetAccessTokenCall {
+	return &GetAccessTokenCall{
+		c:           client,
+		redirectURL: redirectURL,
+		code:        code,
+	}
+}
+
+// GetAccessTokenCall type
+type GetAccessTokenCall struct {
+	c   *Client
+	ctx context.Context
+
+	redirectURL string
+	code        string
+}
+
+// WithContext method
+func (call *GetAccessTokenCall) WithContext(ctx context.Context) *GetAccessTokenCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *GetAccessTokenCall) Do() (*BasicResponse, error) {
+	buf := strings.NewReader(fmt.Sprintf("grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s", call.code, call.redirectURL, call.c.channelID, call.c.channelSecret))
+	res, err := call.c.post(call.ctx, APIEndpointToken, buf)
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToBasicResponse(res)
 }
 
 type TokenResponse struct {
