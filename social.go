@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
+	"os"
+	"path"
 	"strings"
 	"time"
 )
@@ -39,7 +42,7 @@ func (call *GetAccessTokenCall) WithContext(ctx context.Context) *GetAccessToken
 }
 
 // Do method
-func (call *GetAccessTokenCall) Do() (*BasicResponse, error) {
+func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 	buf := strings.NewReader(fmt.Sprintf("grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s", call.code, call.redirectURL, call.c.channelID, call.c.channelSecret))
 	res, err := call.c.post(call.ctx, APIEndpointToken, buf)
 	if res != nil && res.Body != nil {
@@ -48,7 +51,7 @@ func (call *GetAccessTokenCall) Do() (*BasicResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return decodeToBasicResponse(res)
+	return decodeToTokenResponse(res)
 }
 
 type Payload struct {
@@ -72,67 +75,32 @@ func randStringRunes(n int) string {
 	return string(b)
 }
 
-//GetWebLoinURL - LINE LOGIN 2.1 get LINE Login URL
-// func GetWebLoinURL(clientID, redirectURL, state, scope, nounce, chatbotPrompt string) string {
-// 	req, err := http.NewRequest("GET", getAuthAPI(), nil)
-// 	if err != nil {
-// 		log.Print(err)
-// 		os.Exit(1)
-// 	}
-// 	q := req.URL.Query()
-// 	q.Add("response_type", "code")
-// 	q.Add("client_id", clientID)
-// 	q.Add("state", state)
-// 	q.Add("scope", scope)
-// 	q.Add("nounce", nounce)
-// 	q.Add("redirect_uri", redirectURL)
-// 	if len(chatbotPrompt) > 0 {
-// 		q.Add("bot_prompt", chatbotPrompt)
-// 	}
-// 	q.Add("prompt", "consent")
-// 	req.URL.RawQuery = q.Encode()
-// 	log.Println(req.URL.String())
-// 	return req.URL.String()
-// }
+// GetWebLoinURL - LINE LOGIN 2.1 get LINE Login URL
+func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPrompt string) string {
+	req, err := http.NewRequest("GET", path.Join(APIEndpointBase, APIEndpointAuthorize), nil)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	q := req.URL.Query()
+	q.Add("response_type", "code")
+	q.Add("client_id", client.channelID)
+	q.Add("state", state)
+	q.Add("scope", scope)
+	q.Add("nounce", nounce)
+	q.Add("redirect_uri", redirectURL)
+	if len(chatbotPrompt) > 0 {
+		q.Add("bot_prompt", chatbotPrompt)
+	}
+	q.Add("prompt", "consent")
+	req.URL.RawQuery = q.Encode()
+	log.Println(req.URL.String())
+	return req.URL.String()
+}
 
 func GenerateNounce() string {
 	return b64.StdEncoding.EncodeToString([]byte(randStringRunes(8)))
 }
-
-// func RequestLoginToken(code, redirectURL, clientID, clientSecret string) (*TokenResponse, error) {
-// 	qURL := url.QueryEscape(redirectURL)
-// 	body := strings.NewReader(fmt.Sprintf("grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s", code, qURL, clientID, clientSecret))
-// 	req, err := http.NewRequest("POST", getTokenAPI(), body)
-// 	if err != nil {
-// 		// handle err
-// 		return nil, err
-// 	}
-// 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-// 	resp, err := http.DefaultClient.Do(req)
-// 	if err != nil {
-// 		// handle err
-// 		return nil, err
-// 	}
-// 	if resp.StatusCode != 200 {
-// 		log.Println("http error:", resp.StatusCode)
-// 		return nil, err
-// 	}
-// 	defer resp.Body.Close()
-
-// 	retBody, err := ioutil.ReadAll(resp.Body)
-// 	if err != nil {
-// 		log.Println("err:", err)
-// 		return nil, err
-// 	}
-// 	log.Println("body:", string(retBody))
-// 	retToken := TokenResponse{}
-// 	if err := json.Unmarshal(retBody, &retToken); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return &retToken, nil
-// }
 
 func DecodeIDToken(idToken string, channelID string) (*Payload, error) {
 	splitToken := strings.Split(idToken, ".")
