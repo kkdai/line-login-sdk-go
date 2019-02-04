@@ -105,6 +105,7 @@ func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
 	return decodeToTokenVerifyResponse(res)
 }
 
+// Refresh Token
 func (client *Client) RefreshToken(refreshToken string) *RefreshTokenCall {
 	return &RefreshTokenCall{
 		c:            client,
@@ -142,4 +143,43 @@ func (call *RefreshTokenCall) Do() (*TokenRefreshResponse, error) {
 		return nil, err
 	}
 	return decodeToTokenRefreshResponse(res)
+}
+
+// Revoke Token
+func (client *Client) RevokeToken(accessToken string) *RevokeTokenCall {
+	return &RevokeTokenCall{
+		c:           client,
+		accessToken: accessToken,
+	}
+}
+
+// RefreshTokenCall type
+type RevokeTokenCall struct {
+	c   *Client
+	ctx context.Context
+
+	accessToken string
+}
+
+// WithContext method
+func (call *RevokeTokenCall) WithContext(ctx context.Context) *RevokeTokenCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *RevokeTokenCall) Do() (*BasicResponse, error) {
+	data := url.Values{}
+	data.Set("access_token", call.accessToken)
+	data.Set("client_id", call.c.channelID)
+	data.Set("client_secret", call.c.channelSecret)
+
+	res, err := call.c.post(call.ctx, APIEndpointToken, strings.NewReader(data.Encode()))
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToBasicResponse(res)
 }

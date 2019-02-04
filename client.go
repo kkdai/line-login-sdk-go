@@ -16,6 +16,7 @@ const (
 	APIEndpointAuthorize   = "/oauth2/v2.1/authorize"
 	APIEndpointToken       = "/oauth2/v2.1/token"
 	APIEndpointTokenVerify = "/oauth2/v2.1/verify"
+	APIEndpointRevokeToken = "/oauth2/v2.1/revoke"
 )
 
 // Client type
