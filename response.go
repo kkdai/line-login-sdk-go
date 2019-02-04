@@ -51,6 +51,15 @@ type TokenVerifyResponse struct {
 	ExpiresIn int    `json:"expires_in"`
 }
 
+// Token refresh type
+type TokenRefreshResponse struct {
+	TokenType    string `json:"token_type"`
+	Scope        string `json:"scope"`
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 // TokenResponse type
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -158,6 +167,18 @@ func decodeToTokenVerifyResponse(res *http.Response) (*TokenVerifyResponse, erro
 	}
 	decoder := json.NewDecoder(res.Body)
 	result := TokenVerifyResponse{}
+	if err := decoder.Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func decodeToTokenRefreshResponse(res *http.Response) (*TokenRefreshResponse, error) {
+	if err := checkResponse(res); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(res.Body)
+	result := TokenRefreshResponse{}
 	if err := decoder.Decode(&result); err != nil {
 		return nil, err
 	}

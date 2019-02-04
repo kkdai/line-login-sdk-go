@@ -120,7 +120,7 @@ func (client *Client) post(ctx context.Context, endpoint string, body io.Reader)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	return client.do(ctx, req)
 }
 
