@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -67,4 +68,39 @@ func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPr
 	req.URL.RawQuery = q.Encode()
 	log.Println(req.URL.String())
 	return req.URL.String()
+}
+
+func (client *Client) GetTokenVerify(accessToken string) *GetTokenVerifyCall {
+	return &GetTokenVerifyCall{
+		c:           client,
+		accessToken: accessToken,
+	}
+}
+
+// Client type
+type GetTokenVerifyCall struct {
+	c   *Client
+	ctx context.Context
+
+	accessToken string
+}
+
+// WithContext method
+func (call *GetTokenVerifyCall) WithContext(ctx context.Context) *GetTokenVerifyCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *GetTokenVerifyCall) Do() (*TokenVerifyResponse, error) {
+	var urlQuery url.Values
+	urlQuery.Set("access_token", call.accessToken)
+	res, err := call.c.get(call.ctx, APIEndpointTokenVerify, urlQuery)
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToTokenVerifyResponse(res)
 }

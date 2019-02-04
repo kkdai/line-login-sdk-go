@@ -13,8 +13,9 @@ import (
 const (
 	APIEndpointBase = "https://access.line.me"
 
-	APIEndpointAuthorize = "/oauth2/v2.1/authorize"
-	APIEndpointToken     = "/oauth2/v2.1/token"
+	APIEndpointAuthorize   = "/oauth2/v2.1/authorize"
+	APIEndpointToken       = "/oauth2/v2.1/token"
+	APIEndpointTokenVerify = "/oauth2/v2.1/verify"
 )
 
 // Client type
