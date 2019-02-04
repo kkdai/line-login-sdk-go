@@ -44,6 +44,13 @@ type Payload struct {
 	Picture string `json:"picture"`
 }
 
+// Token verification reponse
+type TokenVerifyResponse struct {
+	Scope     string `json:"scope"`
+	ClientID  string `json:"client_id"`
+	ExpiresIn int    `json:"expires_in"`
+}
+
 // TokenResponse type
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -139,6 +146,18 @@ func decodeToTokenResponse(res *http.Response) (*TokenResponse, error) {
 	}
 	decoder := json.NewDecoder(res.Body)
 	result := TokenResponse{}
+	if err := decoder.Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func decodeToTokenVerifyResponse(res *http.Response) (*TokenVerifyResponse, error) {
+	if err := checkResponse(res); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(res.Body)
+	result := TokenVerifyResponse{}
 	if err := decoder.Decode(&result); err != nil {
 		return nil, err
 	}
