@@ -70,15 +70,15 @@ func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPr
 	return req.URL.String()
 }
 
-func (client *Client) GetTokenVerify(accessToken string) *GetTokenVerifyCall {
-	return &GetTokenVerifyCall{
+func (client *Client) TokenVerify(accessToken string) *TokenVerifyCall {
+	return &TokenVerifyCall{
 		c:           client,
 		accessToken: accessToken,
 	}
 }
 
 // Client type
-type GetTokenVerifyCall struct {
+type TokenVerifyCall struct {
 	c   *Client
 	ctx context.Context
 
@@ -86,13 +86,13 @@ type GetTokenVerifyCall struct {
 }
 
 // WithContext method
-func (call *GetTokenVerifyCall) WithContext(ctx context.Context) *GetTokenVerifyCall {
+func (call *TokenVerifyCall) WithContext(ctx context.Context) *TokenVerifyCall {
 	call.ctx = ctx
 	return call
 }
 
 // Do method
-func (call *GetTokenVerifyCall) Do() (*TokenVerifyResponse, error) {
+func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
 	var urlQuery url.Values
 	urlQuery.Set("access_token", call.accessToken)
 	res, err := call.c.get(call.ctx, APIEndpointTokenVerify, urlQuery)
@@ -103,4 +103,43 @@ func (call *GetTokenVerifyCall) Do() (*TokenVerifyResponse, error) {
 		return nil, err
 	}
 	return decodeToTokenVerifyResponse(res)
+}
+
+func (client *Client) RefreshToken(refreshToken string) *RefreshTokenCall {
+	return &RefreshTokenCall{
+		c:            client,
+		refreshToken: refreshToken,
+	}
+}
+
+// RefreshTokenCall type
+type RefreshTokenCall struct {
+	c   *Client
+	ctx context.Context
+
+	refreshToken string
+}
+
+// WithContext method
+func (call *RefreshTokenCall) WithContext(ctx context.Context) *RefreshTokenCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *RefreshTokenCall) Do() (*TokenRefreshResponse, error) {
+	data := url.Values{}
+	data.Set("grant_type", "refresh_token")
+	data.Set("refresh_token", call.refreshToken)
+	data.Set("client_id", call.c.channelID)
+	data.Set("client_secret", call.c.channelSecret)
+
+	res, err := call.c.post(call.ctx, APIEndpointToken, strings.NewReader(data.Encode()))
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToTokenRefreshResponse(res)
 }
