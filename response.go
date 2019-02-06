@@ -60,6 +60,14 @@ type TokenRefreshResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// GetUserProfileResponse type
+type GetUserProfileResponse struct {
+	UserID        string `json:"userId"`
+	DisplayName   string `json:"displayName"`
+	PictureURL    string `json:"pictureUrl"`
+	StatusMessage string `json:"statusMessage"`
+}
+
 // TokenResponse type
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -179,6 +187,18 @@ func decodeToTokenRefreshResponse(res *http.Response) (*TokenRefreshResponse, er
 	}
 	decoder := json.NewDecoder(res.Body)
 	result := TokenRefreshResponse{}
+	if err := decoder.Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func decodeToGetUserProfileResponse(res *http.Response) (*GetUserProfileResponse, error) {
+	if err := checkResponse(res); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(res.Body)
+	result := GetUserProfileResponse{}
 	if err := decoder.Decode(&result); err != nil {
 		return nil, err
 	}

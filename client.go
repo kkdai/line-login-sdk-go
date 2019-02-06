@@ -3,6 +3,7 @@ package apiservice
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,10 +14,11 @@ import (
 const (
 	APIEndpointBase = "https://access.line.me"
 
-	APIEndpointAuthorize   = "/oauth2/v2.1/authorize"
-	APIEndpointToken       = "/oauth2/v2.1/token"
-	APIEndpointTokenVerify = "/oauth2/v2.1/verify"
-	APIEndpointRevokeToken = "/oauth2/v2.1/revoke"
+	APIEndpointAuthorize      = "/oauth2/v2.1/authorize"
+	APIEndpointToken          = "/oauth2/v2.1/token"
+	APIEndpointTokenVerify    = "/oauth2/v2.1/verify"
+	APIEndpointRevokeToken    = "/oauth2/v2.1/revoke"
+	APIEndpointGetUserProfile = "/v2/profile"
 )
 
 // Client type
@@ -113,6 +115,7 @@ func (client *Client) get(ctx context.Context, endpoint string, query url.Values
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
 	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ""))
 	return client.do(ctx, req)
 }
 
