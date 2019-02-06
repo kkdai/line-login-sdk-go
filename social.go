@@ -183,3 +183,38 @@ func (call *RevokeTokenCall) Do() (*BasicResponse, error) {
 	}
 	return decodeToBasicResponse(res)
 }
+
+func (client *Client) GetUserProfile(accessToken string) *GetUserProfileCall {
+	return &GetUserProfileCall{
+		c:           client,
+		accessToken: accessToken,
+	}
+}
+
+// GetUserProfileCall type
+type GetUserProfileCall struct {
+	c   *Client
+	ctx context.Context
+
+	accessToken string
+}
+
+// WithContext method
+func (call *GetUserProfileCall) WithContext(ctx context.Context) *GetUserProfileCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *GetUserProfileCall) Do() (*GetUserProfileResponse, error) {
+	var urlQuery url.Values
+	urlQuery.Set("access_token", call.accessToken)
+	res, err := call.c.get(call.ctx, APIEndpointGetUserProfile, urlQuery)
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToGetUserProfileResponse(res)
+}
