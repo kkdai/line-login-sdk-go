@@ -115,7 +115,7 @@ func (client *Client) get(ctx context.Context, endpoint string, query url.Values
 	if query != nil {
 		req.URL.RawQuery = query.Encode()
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ""))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", query.Get("accessToken")))
 	return client.do(ctx, req)
 }
 
