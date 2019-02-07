@@ -218,3 +218,38 @@ func (call *GetUserProfileCall) Do() (*GetUserProfileResponse, error) {
 	}
 	return decodeToGetUserProfileResponse(res)
 }
+
+func (client *Client) GetFriendshipStatus(accessToken string) *GetFriendshipStatusCall {
+	return &GetFriendshipStatusCall{
+		c:           client,
+		accessToken: accessToken,
+	}
+}
+
+// GetUserProfileCall type
+type GetFriendshipStatusCall struct {
+	c   *Client
+	ctx context.Context
+
+	accessToken string
+}
+
+// WithContext method
+func (call *GetFriendshipStatusCall) WithContext(ctx context.Context) *GetFriendshipStatusCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *GetFriendshipStatusCall) Do() (*GetFriendshipStatusResponse, error) {
+	var urlQuery url.Values
+	urlQuery.Set("access_token", call.accessToken)
+	res, err := call.c.get(call.ctx, APIEndpointGetFriendshipStratus, urlQuery)
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToGetFriendshipStatusResponse(res)
+}

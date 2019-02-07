@@ -14,11 +14,12 @@ import (
 const (
 	APIEndpointBase = "https://access.line.me"
 
-	APIEndpointAuthorize      = "/oauth2/v2.1/authorize"
-	APIEndpointToken          = "/oauth2/v2.1/token"
-	APIEndpointTokenVerify    = "/oauth2/v2.1/verify"
-	APIEndpointRevokeToken    = "/oauth2/v2.1/revoke"
-	APIEndpointGetUserProfile = "/v2/profile"
+	APIEndpointAuthorize            = "/oauth2/v2.1/authorize"
+	APIEndpointToken                = "/oauth2/v2.1/token"
+	APIEndpointTokenVerify          = "/oauth2/v2.1/verify"
+	APIEndpointRevokeToken          = "/oauth2/v2.1/revoke"
+	APIEndpointGetUserProfile       = "/v2/profile"
+	APIEndpointGetFriendshipStratus = "/friendship/v1/status"
 )
 
 // Client type
