@@ -68,6 +68,11 @@ type GetUserProfileResponse struct {
 	StatusMessage string `json:"statusMessage"`
 }
 
+// GetFriendshipStatusResponse type
+type GetFriendshipStatusResponse struct {
+	FriendFlag bool `json:"friendFlag"`
+}
+
 // TokenResponse type
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -199,6 +204,18 @@ func decodeToGetUserProfileResponse(res *http.Response) (*GetUserProfileResponse
 	}
 	decoder := json.NewDecoder(res.Body)
 	result := GetUserProfileResponse{}
+	if err := decoder.Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func decodeToGetFriendshipStatusResponse(res *http.Response) (*GetFriendshipStatusResponse, error) {
+	if err := checkResponse(res); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(res.Body)
+	result := GetFriendshipStatusResponse{}
 	if err := decoder.Decode(&result); err != nil {
 		return nil, err
 	}
