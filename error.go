@@ -1,4 +1,4 @@
-package apiservice
+package social
 
 import (
 	"bytes"

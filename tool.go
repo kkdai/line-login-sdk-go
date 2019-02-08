@@ -1,4 +1,4 @@
-package apiservice
+package social
 
 import (
 	b64 "encoding/base64"
