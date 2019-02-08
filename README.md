@@ -1,6 +1,6 @@
 LINE Social API SDK in Go
 ======================
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/line-api-go/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/line-api-go?status.svg)](https://godoc.org/github.com/kkdai/line-api-go)  [![Build Status](https://travis-ci.org/kkdai/line-api-go.svg)](https://travis-ci.org/kkdai/line-api-go)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/line-social-sdk-go/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/line-social-sdk-go?status.svg)](https://godoc.org/github.com/kkdai/line-social-sdk-go)  [![Build Status](https://travis-ci.org/kkdai/line-social-sdk-go.svg)](https://travis-ci.org/kkdai/line-social-sdk-go)
  
 
 Support APIs
