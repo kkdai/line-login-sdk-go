@@ -53,34 +53,71 @@ type TokenVerifyResponse struct {
 
 // Token refresh type
 type TokenRefreshResponse struct {
-	TokenType    string `json:"token_type"`
-	Scope        string `json:"scope"`
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
+	// TokenType: Bearer
+	TokenType string `json:"token_type"`
+
+	// Scope: Permissions granted by the user. For more information, see Scopes.
+	//profile: Permission to get the user's profile information.
+	//openid: Used to retrieve an ID token. For more information, see ID tokens.
+	//email: Permission to get the user's email address. openid must be specified at the same time. For more information, see ID tokens.
+	Scope string `json:"scope"`
+
+	// AccessToken: Access token. Valid for 30 days.
+	AccessToken string `json:"access_token"`
+
+	// ExpiresIn: Amount of time in seconds until the access token expires
+	ExpiresIn int `json:"expires_in"`
+
+	// RefreshToken: Which token you want to refresh.
+	//Token used to get a new access token. Valid up until 10 days after the access token expires.
 	RefreshToken string `json:"refresh_token"`
 }
 
 // GetUserProfileResponse type
 type GetUserProfileResponse struct {
-	UserID        string `json:"userId"`
-	DisplayName   string `json:"displayName"`
-	PictureURL    string `json:"pictureUrl"`
+	// UserID: Identifier of the user
+	UserID string `json:"userId"`
+
+	// DisplayName: User's display name
+	DisplayName string `json:"displayName"`
+
+	// PictureURL: Profile image URL. "https" image URL. Not included in the response if the user doesn't have a profile image.
+	PictureURL string `json:"pictureUrl"`
+
+	//StatusMessage: User's status message. Not included in the response if the user doesn't have a status message.
 	StatusMessage string `json:"statusMessage"`
 }
 
 // GetFriendshipStatusResponse type
 type GetFriendshipStatusResponse struct {
+	// FriendFlag: true if the user has added the bot as a friend and has not blocked the bot. Otherwise, false.
 	FriendFlag bool `json:"friendFlag"`
 }
 
 // TokenResponse type
 type TokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	IDToken      string `json:"id_token"`
+	// AccessToken: Access token. Valid for 30 days.
+	AccessToken string `json:"access_token"`
+
+	// ExpiresIn: Amount of time in seconds until the access token expires
+	ExpiresIn int `json:"expires_in"`
+
+	// IDToken: JSON Web Token (JWT) that includes information about the user.
+	//This field is returned only if openid is specified in the scope. For more information, see ID tokens.
+	IDToken string `json:"id_token"`
+
+	// RefreshToken: Which token you want to refresh.
+	//Token used to get a new access token. Valid up until 10 days after the access token expires.
 	RefreshToken string `json:"refresh_token"`
-	Scope        string `json:"scope"`
-	TokenType    string `json:"token_type"`
+
+	// Scope: Permissions granted by the user. For more information, see Scopes.
+	//profile: Permission to get the user's profile information.
+	//openid: Used to retrieve an ID token. For more information, see ID tokens.
+	//email: Permission to get the user's email address. openid must be specified at the same time. For more information, see ID tokens.
+	Scope string `json:"scope"`
+
+	// TokenType: Bearer
+	TokenType string `json:"token_type"`
 }
 
 func (t TokenResponse) DecodeIDToken(channelID string) (*Payload, error) {
