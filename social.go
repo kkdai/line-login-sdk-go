@@ -2,7 +2,6 @@ package social
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -36,8 +35,14 @@ func (call *GetAccessTokenCall) WithContext(ctx context.Context) *GetAccessToken
 
 // Do method
 func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
-	buf := strings.NewReader(fmt.Sprintf("grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s", call.code, call.redirectURL, call.c.channelID, call.c.channelSecret))
-	res, err := call.c.post(call.ctx, APIEndpointToken, buf)
+	data := url.Values{}
+	data.Set("grant_type", "authorization_code")
+	data.Set("code", call.code)
+	data.Set("redirect_uri", call.redirectURL)
+	data.Set("client_id", call.c.channelID)
+	data.Set("client_secret", call.c.channelSecret)
+
+	res, err := call.c.post(call.ctx, APIEndpointToken, strings.NewReader(data.Encode()))
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
