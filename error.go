@@ -20,7 +20,7 @@ type APIError struct {
 // Error method
 func (e *APIError) Error() string {
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "linebot: APIError %d ", e.Code)
+	fmt.Fprintf(&buf, "Social SDK: APIError %d ", e.Code)
 	if e.Response != nil {
 		fmt.Fprintf(&buf, "%s", e.Response.Message)
 		for _, d := range e.Response.Details {
