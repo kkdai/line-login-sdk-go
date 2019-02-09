@@ -54,7 +54,7 @@ func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 
 // GetWebLoinURL - LINE LOGIN 2.1 get LINE Login URL
 func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPrompt string) string {
-	req, err := http.NewRequest("GET", path.Join(APIEndpointBase, APIEndpointAuthorize), nil)
+	req, err := http.NewRequest("GET", path.Join(APIEndpointAuthBase, APIEndpointAuthorize), nil)
 	if err != nil {
 		log.Print(err)
 		os.Exit(1)
