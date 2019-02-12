@@ -120,7 +120,7 @@ type TokenResponse struct {
 	TokenType string `json:"token_type"`
 }
 
-func (t TokenResponse) DecodeIDToken(channelID string) (*Payload, error) {
+func (t TokenResponse) DecodePayload(channelID string) (*Payload, error) {
 	splitToken := strings.Split(t.IDToken, ".")
 	if len(splitToken) < 3 {
 		log.Println("Error: idToken size is wrong, size=", len(splitToken))
@@ -148,9 +148,9 @@ func (t TokenResponse) DecodeIDToken(channelID string) (*Payload, error) {
 	if strings.Compare(retPayload.Iss, "https://access.line.me") != 0 {
 		return nil, fmt.Errorf("Payload verification wrong. Wrong issue organization. \n")
 	}
-	if strings.Compare(retPayload.Aud, channelID) != 0 {
-		return nil, fmt.Errorf("Payload verification wrong. Wrong audience. \n")
-	}
+	// if strings.Compare(retPayload.Aud, channelID) != 0 {
+	// 	return nil, fmt.Errorf("Payload verification wrong. Wrong audience. \n")
+	// }
 
 	return retPayload, nil
 }
