@@ -103,7 +103,7 @@ func (call *TokenVerifyCall) WithContext(ctx context.Context) *TokenVerifyCall {
 
 // Do method
 func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
-	var urlQuery url.Values
+	urlQuery := url.Values{}
 	urlQuery.Set("access_token", call.accessToken)
 	res, err := call.c.get(call.ctx, APIEndpointTokenVerify, urlQuery)
 	if res != nil && res.Body != nil {
@@ -223,7 +223,9 @@ func (call *GetUserProfileCall) WithContext(ctx context.Context) *GetUserProfile
 
 // Do method
 func (call *GetUserProfileCall) Do() (*GetUserProfileResponse, error) {
-	var urlQuery url.Values
+	urlQuery := url.Values{}
+	log.Println("urlQuery:", urlQuery)
+	log.Println("call.accesstoken:", call.accessToken)
 	urlQuery.Set("access_token", call.accessToken)
 	res, err := call.c.get(call.ctx, APIEndpointGetUserProfile, urlQuery)
 	if res != nil && res.Body != nil {
