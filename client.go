@@ -109,14 +109,11 @@ func (client *Client) do(ctx context.Context, req *http.Request) (*http.Response
 }
 
 func (client *Client) get(ctx context.Context, endpoint string, query url.Values) (*http.Response, error) {
-	req, err := http.NewRequest("GET", client.url(endpoint), nil)
+	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	if query != nil {
-		req.URL.RawQuery = query.Encode()
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", query.Get("accessToken")))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", query.Get("access_token")))
 	return client.do(ctx, req)
 }
 

@@ -74,7 +74,6 @@ func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPr
 	}
 	q.Add("prompt", "consent")
 	req.URL.RawQuery = q.Encode()
-	log.Println(req.URL.String())
 	return req.URL.String()
 }
 
@@ -224,10 +223,8 @@ func (call *GetUserProfileCall) WithContext(ctx context.Context) *GetUserProfile
 // Do method
 func (call *GetUserProfileCall) Do() (*GetUserProfileResponse, error) {
 	urlQuery := url.Values{}
-	log.Println("urlQuery:", urlQuery)
-	log.Println("call.accesstoken:", call.accessToken)
 	urlQuery.Set("access_token", call.accessToken)
-	res, err := call.c.get(call.ctx, APIEndpointGetUserProfile, urlQuery)
+	res, err := call.c.get(call.ctx, "https://api.line.me/v2/profile", urlQuery)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
