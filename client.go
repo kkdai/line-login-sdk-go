@@ -17,7 +17,7 @@ const (
 
 	APIEndpointBase                 = "https://api.line.me"
 	APIEndpointToken                = "/oauth2/v2.1/token"
-	APIEndpointTokenVerify          = "/oauth2/v2.1/verify"
+	APIEndpointTokenVerify          = "https://api.line.me/oauth2/v2.1/verify"
 	APIEndpointRevokeToken          = "/oauth2/v2.1/revoke"
 	APIEndpointGetUserProfile       = "/v2/profile"
 	APIEndpointGetFriendshipStratus = "/friendship/v1/status"

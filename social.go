@@ -102,9 +102,16 @@ func (call *TokenVerifyCall) WithContext(ctx context.Context) *TokenVerifyCall {
 
 // Do method
 func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
-	urlQuery := url.Values{}
-	urlQuery.Set("access_token", call.accessToken)
-	res, err := call.c.get(call.ctx, APIEndpointTokenVerify, urlQuery)
+	req, err := http.NewRequest("GET", APIEndpointTokenVerify, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	q := req.URL.Query()
+	q.Add("access_token", call.accessToken)
+	req.URL.RawQuery = q.Encode()
+
+	res, err := call.c.do(call.ctx, req)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
