@@ -231,7 +231,7 @@ func (call *GetUserProfileCall) WithContext(ctx context.Context) *GetUserProfile
 func (call *GetUserProfileCall) Do() (*GetUserProfileResponse, error) {
 	urlQuery := url.Values{}
 	urlQuery.Set("access_token", call.accessToken)
-	res, err := call.c.get(call.ctx, "https://api.line.me/v2/profile", urlQuery)
+	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointGetUserProfile, urlQuery)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
@@ -269,7 +269,7 @@ func (call *GetFriendshipStatusCall) WithContext(ctx context.Context) *GetFriend
 func (call *GetFriendshipStatusCall) Do() (*GetFriendshipStatusResponse, error) {
 	var urlQuery url.Values
 	urlQuery.Set("access_token", call.accessToken)
-	res, err := call.c.get(call.ctx, APIEndpointGetFriendshipStratus, urlQuery)
+	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointGetFriendshipStratus, urlQuery)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
