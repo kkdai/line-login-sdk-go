@@ -11,11 +11,13 @@ import (
 )
 
 //Provide those data for testing.
+
 const (
-	accessToken string = ""
-	cID         string = ""
-	cSecret     string = ""
-	qURL        string = ""
+	accessToken  string = ""
+	cID          string = ""
+	cSecret      string = ""
+	qURL         string = ""
+	refreshToken string = ""
 )
 
 func RequestLoginToken(code, redirectURL, clientID, clientSecret string) (*TokenResponse, error) {
@@ -100,7 +102,7 @@ func TestVerifyToken(t *testing.T) {
 
 func TestRefreshToken(t *testing.T) {
 	client, _ := New(cID, cSecret)
-	ret, err := client.RefreshToken(accessToken).Do()
+	ret, err := client.RefreshToken(refreshToken).Do()
 	if err != nil {
 		log.Println("err:", err)
 	}
