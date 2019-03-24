@@ -194,7 +194,7 @@ func (call *RevokeTokenCall) Do() (*BasicResponse, error) {
 	data.Set("client_id", call.c.channelID)
 	data.Set("client_secret", call.c.channelSecret)
 
-	res, err := call.c.post(call.ctx, APIEndpointToken, strings.NewReader(data.Encode()))
+	res, err := call.c.post(call.ctx, APIEndpointRevokeToken, strings.NewReader(data.Encode()))
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
