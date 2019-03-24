@@ -139,3 +139,15 @@ func TestRefreshToken(t *testing.T) {
 
 	log.Println("ret:", ret)
 }
+
+func TestRevokeToken(t *testing.T) {
+	checkEnvVariables(t)
+
+	client, _ := New(cID, cSecret)
+	ret, err := client.RevokeToken(accessToken).Do()
+	if err != nil {
+		log.Println("err:", err)
+	}
+
+	log.Println("ret:", ret)
+}
