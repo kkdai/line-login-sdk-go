@@ -112,7 +112,7 @@ func TestGetURLCode(t *testing.T) {
 	nounce := GenerateNounce()
 
 	client, _ := New(cID, cSecret)
-	url := client.GetWebLoinURL(qURL, state, scope, nounce, "normal")
+	url := client.GetWebLoinURL(qURL, state, scope, authorizationRequestOptions{Nonce: nounce, BotPrompt: "normal", Prompt: "consent"})
 	log.Println("url: ", url)
 }
 
