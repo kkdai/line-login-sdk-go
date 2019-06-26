@@ -10,6 +10,14 @@ import (
 	"strings"
 )
 
+type authorizationRequestOptions struct {
+	Nonce     string
+	Prompt    string
+	MaxAge    int
+	UILocales string
+	BotPrompt string
+}
+
 // GetAcceessToken: Issues access token.
 func (client *Client) GetAccessToken(redirectURL, code string) *GetAccessTokenCall {
 	return &GetAccessTokenCall{
@@ -55,8 +63,8 @@ func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 	return decodeToTokenResponse(res)
 }
 
-// GetWebLoinURL - LINE LOGIN 2.1 get LINE Login URL
-func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPrompt string) string {
+// GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
+func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options authorizationRequestOptions) string {
 	req, err := http.NewRequest("GET", path.Join(APIEndpointAuthBase, APIEndpointAuthorize), nil)
 	if err != nil {
 		log.Print(err)
@@ -64,15 +72,27 @@ func (client *Client) GetWebLoinURL(redirectURL, state, scope, nounce, chatbotPr
 	}
 	q := req.URL.Query()
 	q.Add("response_type", "code")
+	q.Add("redirect_uri", redirectURL)
 	q.Add("client_id", client.channelID)
 	q.Add("state", state)
 	q.Add("scope", scope)
-	q.Add("nounce", nounce)
-	q.Add("redirect_uri", redirectURL)
-	if len(chatbotPrompt) > 0 {
-		q.Add("bot_prompt", chatbotPrompt)
+
+	if len(options.Nonce) > 0 {
+		q.Add("nounce", options.Nonce)
 	}
-	q.Add("prompt", "consent")
+
+	if len(options.Prompt) > 0 {
+		q.Add("prompt", options.Prompt)
+	}
+
+	if len(options.UILocales) > 0 {
+		q.Add("ui_locales", options.UILocales)
+	}
+
+	if len(options.BotPrompt) > 0 {
+		q.Add("bot_prompt", options.BotPrompt)
+	}
+
 	req.URL.RawQuery = q.Encode()
 	return req.URL.String()
 }
