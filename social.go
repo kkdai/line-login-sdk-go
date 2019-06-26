@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type authorizationRequestOptions struct {
+type AuthRequestOptions struct {
 	Nonce     string
 	Prompt    string
 	MaxAge    int
@@ -64,7 +64,7 @@ func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 }
 
 // GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
-func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options authorizationRequestOptions) string {
+func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) string {
 	req, err := http.NewRequest("GET", path.Join(APIEndpointAuthBase, APIEndpointAuthorize), nil)
 	if err != nil {
 		log.Print(err)
