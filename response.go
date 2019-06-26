@@ -123,6 +123,7 @@ type TokenResponse struct {
 	TokenType string `json:"token_type"`
 }
 
+//DecodePayload : decode payload result.
 func (t TokenResponse) DecodePayload(channelID string) (*Payload, error) {
 	splitToken := strings.Split(t.IDToken, ".")
 	if len(splitToken) < 3 {
