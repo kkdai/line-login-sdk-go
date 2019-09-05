@@ -17,10 +17,10 @@ const (
 
 	APIEndpointBase                 = "https://api.line.me"
 	APIEndpointToken                = "/oauth2/v2.1/token"
-	APIEndpointTokenVerify          = "https://api.line.me/oauth2/v2.1/verify"
+	APIEndpointTokenVerify          = "/oauth2/v2.1/verify"
 	APIEndpointRevokeToken          = "/oauth2/v2.1/revoke"
-	APIEndpointGetUserProfile       = "https://api.line.me/v2/profile"
-	APIEndpointGetFriendshipStratus = "https://api.line.me/friendship/v1/status"
+	APIEndpointGetUserProfile       = "/v2/profile"
+	APIEndpointGetFriendshipStratus = "/friendship/v1/status"
 )
 
 // Client type
