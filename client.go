@@ -109,7 +109,7 @@ func (client *Client) do(ctx context.Context, req *http.Request) (*http.Response
 }
 
 func (client *Client) getHeaderAuth(ctx context.Context, endpoint string, query url.Values) (*http.Response, error) {
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequest("GET", client.url(endpoint), nil)
 	if err != nil {
 		return nil, err
 	}
