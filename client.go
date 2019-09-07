@@ -17,10 +17,10 @@ const (
 
 	APIEndpointBase                 = "https://api.line.me"
 	APIEndpointToken                = "/oauth2/v2.1/token"
-	APIEndpointTokenVerify          = "https://api.line.me/oauth2/v2.1/verify"
+	APIEndpointTokenVerify          = "/oauth2/v2.1/verify"
 	APIEndpointRevokeToken          = "/oauth2/v2.1/revoke"
-	APIEndpointGetUserProfile       = "https://api.line.me/v2/profile"
-	APIEndpointGetFriendshipStratus = "https://api.line.me/friendship/v1/status"
+	APIEndpointGetUserProfile       = "/v2/profile"
+	APIEndpointGetFriendshipStratus = "/friendship/v1/status"
 )
 
 // Client type
@@ -109,7 +109,7 @@ func (client *Client) do(ctx context.Context, req *http.Request) (*http.Response
 }
 
 func (client *Client) getHeaderAuth(ctx context.Context, endpoint string, query url.Values) (*http.Response, error) {
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequest("GET", client.url(endpoint), nil)
 	if err != nil {
 		return nil, err
 	}
