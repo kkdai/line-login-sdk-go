@@ -65,7 +65,13 @@ func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 
 // GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
 func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) string {
-	req, err := http.NewRequest("GET", path.Join(APIEndpointAuthBase, APIEndpointAuthorize), nil)
+	u, err := url.Parse(APIEndpointAuthBase)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	u.Path = path.Join(u.Path, APIEndpointAuthorize)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		log.Print(err)
 		os.Exit(1)
@@ -122,7 +128,13 @@ func (call *TokenVerifyCall) WithContext(ctx context.Context) *TokenVerifyCall {
 
 // Do method
 func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
-	req, err := http.NewRequest("GET", APIEndpointTokenVerify, nil)
+	u, err := url.Parse(APIEndpointBase)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	u.Path = path.Join(u.Path, APIEndpointTokenVerify)
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
