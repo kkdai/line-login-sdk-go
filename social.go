@@ -84,7 +84,7 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 	q.Add("scope", scope)
 
 	if len(options.Nounce) > 0 {
-		q.Add("nounce", options.Nounce)
+		q.Add("nonce", options.Nounce)
 	}
 
 	if len(options.Prompt) > 0 {
