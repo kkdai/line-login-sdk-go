@@ -11,7 +11,7 @@ import (
 )
 
 type AuthRequestOptions struct {
-	Nounce    string
+	Nonce     string
 	Prompt    string
 	MaxAge    int
 	UILocales string
@@ -83,8 +83,8 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 	q.Add("state", state)
 	q.Add("scope", scope)
 
-	if len(options.Nounce) > 0 {
-		q.Add("nonce", options.Nounce)
+	if len(options.Nonce) > 0 {
+		q.Add("nonce", options.Nonce)
 	}
 
 	if len(options.Prompt) > 0 {
