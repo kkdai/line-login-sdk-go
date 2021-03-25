@@ -108,11 +108,11 @@ func TestGetURLCode(t *testing.T) {
 	checkEnvVariables(t)
 
 	scope := "profile openid" //profile | openid | email
-	state := GenerateNounce()
-	nounce := GenerateNounce()
+	state := GenerateNonce()
+	nonce := GenerateNonce()
 
 	client, _ := New(cID, cSecret)
-	url := client.GetWebLoinURL(qURL, state, scope, AuthRequestOptions{Nounce: nounce, BotPrompt: "normal", Prompt: "consent"})
+	url := client.GetWebLoinURL(qURL, state, scope, AuthRequestOptions{Nounce: nonce, BotPrompt: "normal", Prompt: "consent"})
 	log.Println("url: ", url)
 }
 

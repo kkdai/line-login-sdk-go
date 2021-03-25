@@ -13,7 +13,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func GenerateNounce() string {
+func GenerateNonce() string {
 	return b64.StdEncoding.EncodeToString([]byte(randStringRunes(8)))
 }
 
