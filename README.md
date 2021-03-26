@@ -1,8 +1,12 @@
-LINE Social API SDK in Go
+LINE Login API SDK in Go
 ======================
 [![GitHub license](https://img.shields.io/badge/license-APACHE2.0-red.svg)](https://raw.githubusercontent.com/kkdai/line-social-sdk-go/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/line-social-sdk-go?status.svg)](https://godoc.org/github.com/kkdai/line-social-sdk-go)
 ![Go](https://github.com/kkdai/line-social-sdk-go/workflows/Go/badge.svg)
 
+
+Original Social API
+======================
+It has been migrated into LINE Login SDK since 2020/11/20. Refer official news https://developers.line.biz/en/news/2020/11/12/social-api-is-now-part-of-line-login/
  
 
 Support APIs
