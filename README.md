@@ -12,12 +12,13 @@ It has been migrated into LINE Login SDK since 2020/11/20. Refer official news h
 Support APIs
 ---------------
 
-### OAuth
+### OAuth2
 - [V] Get Access Token https://developers.line.biz/en/reference/line-login/#issue-access-token
 - [V] Verify Access Token https://developers.line.biz/en/reference/line-login/#verify-access-token
 - [V] Refresh Access Token https://developers.line.biz/en/reference/line-login/#refresh-access-token
 - [V] Revoke Access Token https://developers.line.biz/en/reference/line-login/#revoke-access-token
-- [ ] Verify ID Token https://developers.line.biz/en/reference/line-login/#verify-id-token
+- [V] Verify ID Token https://developers.line.biz/en/reference/line-login/#verify-id-token
+- [ ] Support PKCE to issue token https://developers.line.biz/en/docs/line-login/integrate-pkce/#how-to-integrate-pkce
 
 ### Profile
 - [V] Get User Profile https://developers.line.biz/en/reference/line-login/#profile
