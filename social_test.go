@@ -1,13 +1,8 @@
 package social
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -35,45 +30,6 @@ func checkEnvVariables(t *testing.T) {
 		log.Println("Please set environment variables for your LINE setting")
 		t.Skip("Please set environment variables for your LINE setting")
 	}
-}
-
-func RequestLoginToken(code, redirectURL, clientID, clientSecret string) (*TokenResponse, error) {
-	data := url.Values{}
-	data.Set("grant_type", "authorization_code")
-	data.Set("code", code)
-	data.Set("redirect_uri", redirectURL)
-	data.Set("client_id", clientID)
-	data.Set("client_secret", clientSecret)
-	req, err := http.NewRequest("POST", "https://api.line.me/oauth2/v2.1/token", strings.NewReader(data.Encode()))
-	if err != nil {
-		// handle err
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		// handle err
-		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		log.Println("http error:", resp.StatusCode)
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	retBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("err:", err)
-		return nil, err
-	}
-	log.Println("body:", string(retBody))
-	retToken := TokenResponse{}
-	if err := json.Unmarshal(retBody, &retToken); err != nil {
-		return nil, err
-	}
-
-	return &retToken, nil
 }
 
 func TestGetAccessToken(t *testing.T) {
