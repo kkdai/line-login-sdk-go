@@ -72,6 +72,21 @@ func TestGetURLCode(t *testing.T) {
 	log.Println("url: ", url)
 }
 
+func TestPKCEGetURLCode(t *testing.T) {
+	checkEnvVariables(t)
+
+	scope := "profile openid" //profile | openid | email
+	state := GenerateNonce()
+	nonce := GenerateNonce()
+
+	codeVer := GenerateCodeVerifier(43)
+	codeChallenge := PkceChallenge(codeVer)
+
+	client, _ := New(cID, cSecret)
+	url := client.GetPKCEWebLoinURL(qURL, state, scope, codeChallenge, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	log.Println("url: ", url)
+}
+
 func TestVerifyToken(t *testing.T) {
 	checkEnvVariables(t)
 

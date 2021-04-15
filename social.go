@@ -103,6 +103,48 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 	return req.URL.String()
 }
 
+// GetPKCEWebLoinURL - LINE LOGIN 2.1 get LINE Login authorization request URL by PKCE
+func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) string {
+	u, err := url.Parse(APIEndpointAuthBase)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	u.Path = path.Join(u.Path, APIEndpointAuthorize)
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	q := req.URL.Query()
+	q.Add("response_type", "code")
+	q.Add("redirect_uri", redirectURL)
+	q.Add("client_id", client.channelID)
+	q.Add("state", state)
+	q.Add("scope", scope)
+	q.Add("code_challenge", codeChallenge)
+	q.Add("code_challenge_method", "S256")
+
+	if len(options.Nonce) > 0 {
+		q.Add("nonce", options.Nonce)
+	}
+
+	if len(options.Prompt) > 0 {
+		q.Add("prompt", options.Prompt)
+	}
+
+	if len(options.UILocales) > 0 {
+		q.Add("ui_locales", options.UILocales)
+	}
+
+	if len(options.BotPrompt) > 0 {
+		q.Add("bot_prompt", options.BotPrompt)
+	}
+
+	req.URL.RawQuery = q.Encode()
+	return req.URL.String()
+}
+
 // TokenVerify: Verifies the access token.
 // Note: This is the reference for the v2.1 endpoint. For the v2 reference, see Verify access token v2 (https://developers.line.biz/en/reference/social-api-v2/#verify-access-token)
 func (client *Client) TokenVerify(accessToken string) *TokenVerifyCall {
@@ -309,4 +351,40 @@ func (call *GetFriendshipStatusCall) Do() (*GetFriendshipStatusResponse, error) 
 		return nil, err
 	}
 	return decodeToGetFriendshipStatusResponse(res)
+}
+
+// GetAccessTokenPKCECall type
+type GetAccessTokenPKCECall struct {
+	c   *Client
+	ctx context.Context
+
+	redirectURL string
+	code        string
+}
+
+// WithContext method
+func (call *GetAccessTokenPKCECall) WithContext(ctx context.Context) *GetAccessTokenPKCECall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *GetAccessTokenPKCECall) Do() (*TokenResponse, error) {
+	data := url.Values{}
+	// authorization_code. Specifies the grant type.
+	data.Set("grant_type", "authorization_code")
+	// Authorization code. Code returned in the authorization request.
+	data.Set("code", call.code)
+	data.Set("redirect_uri", call.redirectURL)
+	data.Set("client_id", call.c.channelID)
+	data.Set("client_secret", call.c.channelSecret)
+
+	res, err := call.c.post(call.ctx, APIEndpointToken, strings.NewReader(data.Encode()))
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToTokenResponse(res)
 }
