@@ -122,3 +122,21 @@ func TestRevokeToken(t *testing.T) {
 
 	log.Println("ret:", ret)
 }
+
+func TestGetAccessTokenPKCE(t *testing.T) {
+	checkEnvVariables(t)
+
+	codeVer := GenerateCodeVerifier(43)
+
+	if len(code) == 0 {
+		t.Skip("Skip it since don't exist LINE login code.")
+	}
+
+	client, _ := New(cID, cSecret)
+	ret, err := client.GetAccessTokenPKCE(codeVer, qURL, code).Do()
+	if err != nil {
+		t.Errorf("err: %v", err)
+	}
+
+	t.Logf(" data:= %v", ret)
+}
