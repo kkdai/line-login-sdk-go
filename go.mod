@@ -1,3 +1,3 @@
-module github.com/kkdai/line-social-sdk-go
+module github.com/kkdai/line-login-sdk-go
 
 go 1.13
