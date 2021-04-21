@@ -382,7 +382,7 @@ func (call *GetAccessTokenPKCECall) WithContext(ctx context.Context) *GetAccessT
 func (call *GetAccessTokenPKCECall) Do() (*TokenResponse, error) {
 	data := url.Values{}
 	// authorization_code. Specifies the grant type.
-	data.Set("grant_type", "client_credentials")
+	data.Set("grant_type", "authorization_code")
 	// Authorization code. Code returned in the authorization request.
 	data.Set("code", call.code)
 	data.Set("redirect_uri", call.redirectURL)
