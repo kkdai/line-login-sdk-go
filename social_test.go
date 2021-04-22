@@ -32,6 +32,15 @@ func checkEnvVariables(t *testing.T) {
 	}
 }
 
+func TestCodeChallenge(t *testing.T) {
+	codeVerifier := "wJKN8qz5t8SSI9lMFhBB6qwNkQBkuPZoCxzRhwLRUo1"
+	wantChan := "BSCQwo_m8Wf0fpjmwkIKmPAJ1A7tiuRSNDnXzODS7QI"
+	codeChanllege := PkceChallenge(codeVerifier)
+	if codeChanllege != wantChan {
+		t.Errorf("CodeChannlege Error: \ncodeChan=%s\nwantChan=%s\n", codeChanllege, wantChan)
+	}
+}
+
 func TestGetAccessToken(t *testing.T) {
 	checkEnvVariables(t)
 
