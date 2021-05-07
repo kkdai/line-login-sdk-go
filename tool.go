@@ -29,7 +29,7 @@ func GenerateCodeVerifier(length int) string {
 	if length < 43 {
 		length = 43
 	}
-	return b64.StdEncoding.EncodeToString([]byte(randStringRunes(length)))
+	return randStringRunes(length)
 }
 
 func GenerateNonce() string {
