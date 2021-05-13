@@ -18,7 +18,7 @@ Support APIs
 - [V] Refresh Access Token https://developers.line.biz/en/reference/line-login/#refresh-access-token
 - [V] Revoke Access Token https://developers.line.biz/en/reference/line-login/#revoke-access-token
 - [V] Verify ID Token https://developers.line.biz/en/reference/line-login/#verify-id-token
-- [ ] Support PKCE to issue token https://developers.line.biz/en/docs/line-login/integrate-pkce/#how-to-integrate-pkce
+- [V] Support PKCE to issue token https://developers.line.biz/en/docs/line-login/integrate-pkce/#how-to-integrate-pkce
 
 ### Profile
 - [V] Get User Profile https://developers.line.biz/en/reference/line-login/#profile
