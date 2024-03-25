@@ -341,7 +341,7 @@ func (call *GetFriendshipStatusCall) WithContext(ctx context.Context) *GetFriend
 
 // Do method
 func (call *GetFriendshipStatusCall) Do() (*GetFriendshipStatusResponse, error) {
-	var urlQuery url.Values
+	urlQuery := url.Values{}
 	urlQuery.Set("access_token", call.accessToken)
 	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointGetFriendshipStratus, urlQuery)
 	if res != nil && res.Body != nil {
