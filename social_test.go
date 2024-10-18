@@ -9,20 +9,24 @@ import (
 var (
 	accessToken  string
 	refreshToken string
+	iDToken      string
 	cID          string
 	cSecret      string
 	qURL         string
 	code         string
+	userID       string
 )
 
 //Provide those data for testing.
 func init() {
 	accessToken = os.Getenv("LINE_ACCESS_TOKEN")
 	refreshToken = os.Getenv("LINE_REFRESH_TOKEN")
+	iDToken = os.Getenv("LINE_ID_TOKEN")
 	cID = os.Getenv("LINE_CLIENT_ID")
 	cSecret = os.Getenv("LINE_CLIENT_SECRET")
 	qURL = os.Getenv("LINE_SERVER_URL")
 	code = os.Getenv("LINE_LOGIN_CODE")
+	userID = os.Getenv("LINE_USER_ID")
 }
 
 func checkEnvVariables(t *testing.T) {
@@ -116,6 +120,23 @@ func TestRevokeToken(t *testing.T) {
 
 	client, _ := New(cID, cSecret)
 	ret, err := client.RevokeToken(accessToken).Do()
+	if err != nil {
+		log.Println("err:", err)
+	}
+
+	log.Println("ret:", ret)
+}
+
+func TestVerifyIDToken(t *testing.T) {
+	checkEnvVariables(t)
+
+	nonce := GenerateNonce()
+
+	client, _ := New(cID, cSecret)
+	ret, err := client.VerifyIDToken(iDToken, VerifyIDTokenRequestOptions{
+		nonce:  nonce,
+		userID: userID,
+	}).Do()
 	if err != nil {
 		log.Println("err:", err)
 	}
