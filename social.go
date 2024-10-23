@@ -278,6 +278,65 @@ func (call *RevokeTokenCall) Do() (*BasicResponse, error) {
 	return decodeToBasicResponse(res)
 }
 
+// VerifyIDToken ID tokens are JSON web tokens (JWT) with information about the
+// user. It's possible for an attacker to spoof an ID token. Use this call to
+// verify that a received ID token is authentic, meaning you can use it to obtain
+// the user's profile information and email.
+// https://developers.line.biz/en/reference/line-login/#verify-id-token
+func (client *Client) VerifyIDToken(iDToken string, options VerifyIDTokenRequestOptions) *VerifyIDTokenCall {
+	return &VerifyIDTokenCall{
+		c:       client,
+		iDToken: iDToken,
+		options: options,
+	}
+}
+
+type VerifyIDTokenRequestOptions struct {
+	nonce  string
+	userID string
+}
+
+// VerifyIDTokenCall type
+type VerifyIDTokenCall struct {
+	c   *Client
+	ctx context.Context
+
+	iDToken string
+	options VerifyIDTokenRequestOptions
+}
+
+// WithContext method
+func (call *VerifyIDTokenCall) WithContext(ctx context.Context) *VerifyIDTokenCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *VerifyIDTokenCall) Do() (*VerifyIDTokenResponse, error) {
+	data := url.Values{}
+	data.Set("id_token", call.iDToken)
+	data.Set("client_id", call.c.channelID)
+
+	if call.options.nonce != "" {
+		data.Set("nonce", call.options.nonce)
+	}
+
+	if call.options.userID != "" {
+		data.Set("user_id", call.options.userID)
+	}
+
+	res, err := call.c.post(call.ctx, APIEndpointTokenVerify, strings.NewReader(data.Encode()))
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeToVerifyIDTokenResponse(res)
+}
+
 // GetUserProfile: Gets a user's display name, profile image, and status message.
 //Note: Requires an access token with the profile scope. For more information, see Making an authorization request and Scopes.
 func (client *Client) GetUserProfile(accessToken string) *GetUserProfileCall {
