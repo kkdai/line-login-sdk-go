@@ -164,35 +164,31 @@ type TokenResponse struct {
 // DecodePayload : decode payload result.
 func (t TokenResponse) DecodePayload(channelID string) (*BasicPayload, error) {
 	splitToken := strings.Split(t.IDToken, ".")
-	if len(splitToken) < 3 {
+	if len(splitToken) != 3 {
 		log.Println("Error: idToken size is wrong, size=", len(splitToken))
-		return nil, fmt.Errorf("Error: idToken size is wrong. \n")
+		return nil, fmt.Errorf("error: idToken size is wrong")
 	}
-	header, payload, signature := splitToken[0], splitToken[1], splitToken[2]
-	log.Println("result:", header, payload, signature)
 
-	log.Println("side of payload=", len(payload))
-	payload = base64Decode(payload)
-	log.Println("side of payload=", len(payload), payload)
-	bPayload, err := b64.StdEncoding.DecodeString(payload)
+	payloadSegment := splitToken[1]
+	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
 	if err != nil {
-		log.Println("base64 decode err:", err)
-		return nil, fmt.Errorf("Error: base64 decode. \n")
+		log.Println("base64url decode error:", err)
+		return nil, fmt.Errorf("error: base64url decode")
 	}
-	log.Println("base64 decode succeess:", string(bPayload))
 
 	retPayload := &BasicPayload{}
-	if err := json.Unmarshal(bPayload, retPayload); err != nil {
-		return nil, fmt.Errorf("json unmarshal error, %v. \n", err)
+	if err := json.Unmarshal(decodedPayload, retPayload); err != nil {
+		return nil, fmt.Errorf("json unmarshal error: %v", err)
 	}
 
 	// payload verification
-	if strings.Compare(retPayload.Iss, "https://access.line.me") != 0 {
-		return nil, fmt.Errorf("BasicPayload verification wrong. Wrong issue organization. \n")
+	if retPayload.Iss != "https://access.line.me" {
+		return nil, fmt.Errorf("payload verification failed: wrong issuer")
 	}
-	// if strings.Compare(retPayload.Aud, channelID) != 0 {
-	// 	return nil, fmt.Errorf("BasicPayload verification wrong. Wrong audience. \n")
-	// }
+
+	if retPayload.Aud != channelID {
+		return nil, fmt.Errorf("payload verification failed: wrong audience")
+	}
 
 	return retPayload, nil
 }
