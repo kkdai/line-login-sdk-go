@@ -33,7 +33,7 @@ type UserProfileResponse struct {
 	StatusMessage string `json:"statusMessage"`
 }
 
-type Payload struct {
+type BasicPayload struct {
 	Iss      string   `json:"iss"`
 	Sub      string   `json:"sub"`
 	Aud      string   `json:"aud"`
@@ -45,6 +45,29 @@ type Payload struct {
 	Name     string   `json:"name"`
 	Picture  string   `json:"picture"`
 	Email    string   `json:"email"`
+}
+
+// LineProfilePlusPayload https://developers.line.biz/en/docs/partner-docs/line-profile-plus/#id-token
+type LineProfilePlusPayload struct {
+	BasicPayload
+	GivenName               string  `json:"given_name"`
+	GivenNamePronunciation  string  `json:"given_name_pronunciation"`
+	MiddleName              string  `json:"middle_name"`
+	FamilyName              string  `json:"family_name"`
+	FamilyNamePronunciation string  `json:"family_name_pronunciation"`
+	Gender                  string  `json:"gender"`
+	Birthdate               string  `json:"birthdate"`
+	PhoneNumber             string  `json:"phone_number"`
+	Address                 Address `json:"address"`
+}
+
+// Address https://developers.line.biz/en/docs/partner-docs/line-profile-plus/#address-object
+type Address struct {
+	PostalCode    string `json:"postal_code"`
+	Region        string `json:"region"`
+	Locality      string `json:"locality"`
+	StreetAddress string `json:"street_address"`
+	Country       string `json:"country"`
 }
 
 // Token verification reponse
@@ -138,38 +161,66 @@ type TokenResponse struct {
 	TokenType string `json:"token_type"`
 }
 
-//DecodePayload : decode payload result.
-func (t TokenResponse) DecodePayload(channelID string) (*Payload, error) {
+// DecodePayload : decode payload result.
+func (t TokenResponse) DecodePayload(channelID string) (*BasicPayload, error) {
 	splitToken := strings.Split(t.IDToken, ".")
-	if len(splitToken) < 3 {
+	if len(splitToken) != 3 {
 		log.Println("Error: idToken size is wrong, size=", len(splitToken))
-		return nil, fmt.Errorf("Error: idToken size is wrong. \n")
+		return nil, fmt.Errorf("error: idToken size is wrong")
 	}
-	header, payload, signature := splitToken[0], splitToken[1], splitToken[2]
-	log.Println("result:", header, payload, signature)
 
-	log.Println("side of payload=", len(payload))
-	payload = base64Decode(payload)
-	log.Println("side of payload=", len(payload), payload)
-	bPayload, err := b64.StdEncoding.DecodeString(payload)
+	payloadSegment := splitToken[1]
+	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
 	if err != nil {
-		log.Println("base64 decode err:", err)
-		return nil, fmt.Errorf("Error: base64 decode. \n")
+		log.Println("base64url decode error:", err)
+		return nil, fmt.Errorf("error: base64url decode")
 	}
-	log.Println("base64 decode succeess:", string(bPayload))
 
-	retPayload := &Payload{}
-	if err := json.Unmarshal(bPayload, retPayload); err != nil {
-		return nil, fmt.Errorf("json unmarshal error, %v. \n", err)
+	retPayload := &BasicPayload{}
+	if err := json.Unmarshal(decodedPayload, retPayload); err != nil {
+		return nil, fmt.Errorf("json unmarshal error: %v", err)
 	}
 
 	// payload verification
-	if strings.Compare(retPayload.Iss, "https://access.line.me") != 0 {
-		return nil, fmt.Errorf("Payload verification wrong. Wrong issue organization. \n")
+	if retPayload.Iss != "https://access.line.me" {
+		return nil, fmt.Errorf("payload verification failed: wrong issuer")
 	}
-	// if strings.Compare(retPayload.Aud, channelID) != 0 {
-	// 	return nil, fmt.Errorf("Payload verification wrong. Wrong audience. \n")
-	// }
+
+	if retPayload.Aud != channelID {
+		return nil, fmt.Errorf("payload verification failed: wrong audience")
+	}
+
+	return retPayload, nil
+}
+
+// DecodeLineProfilePlusPayload : decode line profile+ payload result.
+// https://developers.line.biz/en/docs/partner-docs/line-profile-plus/#id-token
+func (t TokenResponse) DecodeLineProfilePlusPayload(channelID string) (*LineProfilePlusPayload, error) {
+	splitToken := strings.Split(t.IDToken, ".")
+	if len(splitToken) < 3 {
+		log.Println("Error: idToken size is wrong, size=", len(splitToken))
+		return nil, fmt.Errorf("Error: idToken size is wrong.")
+	}
+
+	payloadSegment := splitToken[1]
+	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
+	if err != nil {
+		log.Println("base64url decode error:", err)
+		return nil, fmt.Errorf("error: base64url decode")
+	}
+
+	retPayload := &LineProfilePlusPayload{}
+	if err := json.Unmarshal(decodedPayload, retPayload); err != nil {
+		return nil, fmt.Errorf("json unmarshal error: %v", err)
+	}
+
+	if retPayload.Iss != "https://access.line.me" {
+		return nil, fmt.Errorf("payload verification failed: wrong issuer")
+	}
+
+	if retPayload.Aud != channelID {
+		return nil, fmt.Errorf("payload verification failed: wrong audience")
+	}
 
 	return retPayload, nil
 }
