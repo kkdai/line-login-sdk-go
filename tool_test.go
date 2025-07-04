@@ -17,7 +17,11 @@ func TestCodeChallenge(t *testing.T) {
 
 func TestCodeVerifier(t *testing.T) {
 
-	cv1 := GenerateCodeVerifier(0)
+	cv1, err := GenerateCodeVerifier(0)
+	if err != nil {
+		t.Errorf("GenerateCodeVerifier Error: %v", err)
+		return
+	}
 	if len(cv1) != 43 {
 		t.Errorf("CodeVerifier Error: \ncodeVer=%s\n", cv1)
 	}
