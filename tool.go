@@ -1,18 +1,12 @@
 package social
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	b64 "encoding/base64"
-	"log"
-	"math/rand"
-	"time"
 )
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 // PkceChallenge: base64-URL-encoded SHA256 hash of verifier, per rfc 7636
 func PkceChallenge(verifier string) string {
@@ -22,7 +16,7 @@ func PkceChallenge(verifier string) string {
 }
 
 // GenerateCodeVerifier: Generate code verifier (length 43~128) for PKCE.
-func GenerateCodeVerifier(length int) string {
+func GenerateCodeVerifier(length int) (string, error) {
 	if length > 128 {
 		length = 128
 	}
@@ -32,26 +26,25 @@ func GenerateCodeVerifier(length int) string {
 	return randStringRunes(length)
 }
 
-func GenerateNonce() string {
-	return b64.StdEncoding.EncodeToString([]byte(randStringRunes(8)))
-}
-
-func randStringRunes(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+func GenerateNonce() (string, error) {
+	randomStr, err := randStringRunes(8)
+	if err != nil {
+		return "", err
 	}
-	return string(b)
+	return b64.StdEncoding.EncodeToString([]byte(randomStr)), nil
 }
 
-func base64Decode(payload string) string {
-	rem := len(payload) % 4
-	log.Println("rem of payload=", rem)
-	if rem > 0 {
-		i := 4 - rem
-		for ; i > 0; i-- {
-			payload = payload + "="
+func randStringRunes(n int) (string, error) {
+	var result []rune
+	letterRunesLen := len(letterRunes)
+	for range n {
+		var randomBytes [1]byte
+		_, err := rand.Read(randomBytes[:])
+		if err != nil {
+			return "", err
 		}
+		index := int(randomBytes[0]) % letterRunesLen
+		result = append(result, letterRunes[index])
 	}
-	return payload
+	return string(result), nil
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -165,15 +164,13 @@ type TokenResponse struct {
 func (t TokenResponse) DecodePayload(channelID string) (*BasicPayload, error) {
 	splitToken := strings.Split(t.IDToken, ".")
 	if len(splitToken) != 3 {
-		log.Println("Error: idToken size is wrong, size=", len(splitToken))
-		return nil, fmt.Errorf("error: idToken size is wrong")
+		return nil, fmt.Errorf("idToken size is wrong")
 	}
 
 	payloadSegment := splitToken[1]
 	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
 	if err != nil {
-		log.Println("base64url decode error:", err)
-		return nil, fmt.Errorf("error: base64url decode")
+		return nil, fmt.Errorf("base64url decode error: %w", err)
 	}
 
 	retPayload := &BasicPayload{}
@@ -198,20 +195,18 @@ func (t TokenResponse) DecodePayload(channelID string) (*BasicPayload, error) {
 func (t TokenResponse) DecodeLineProfilePlusPayload(channelID string) (*LineProfilePlusPayload, error) {
 	splitToken := strings.Split(t.IDToken, ".")
 	if len(splitToken) < 3 {
-		log.Println("Error: idToken size is wrong, size=", len(splitToken))
-		return nil, fmt.Errorf("Error: idToken size is wrong.")
+		return nil, fmt.Errorf("idToken size is wrong")
 	}
 
 	payloadSegment := splitToken[1]
 	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
 	if err != nil {
-		log.Println("base64url decode error:", err)
-		return nil, fmt.Errorf("error: base64url decode")
+		return nil, fmt.Errorf("base64url decode error: %w", err)
 	}
 
 	retPayload := &LineProfilePlusPayload{}
 	if err := json.Unmarshal(decodedPayload, retPayload); err != nil {
-		return nil, fmt.Errorf("json unmarshal error: %v", err)
+		return nil, fmt.Errorf("json unmarshal error: %w", err)
 	}
 
 	if retPayload.Iss != "https://access.line.me" {
@@ -252,18 +247,6 @@ func decodeToBasicResponse(res *http.Response) (*BasicResponse, error) {
 		if err == io.EOF {
 			return &result, nil
 		}
-		return nil, err
-	}
-	return &result, nil
-}
-
-func decodeToUserProfileResponse(res *http.Response) (*UserProfileResponse, error) {
-	if err := checkResponse(res); err != nil {
-		return nil, err
-	}
-	decoder := json.NewDecoder(res.Body)
-	result := UserProfileResponse{}
-	if err := decoder.Decode(&result); err != nil {
 		return nil, err
 	}
 	return &result, nil
