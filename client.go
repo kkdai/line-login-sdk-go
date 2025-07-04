@@ -27,7 +27,6 @@ const (
 type Client struct {
 	channelID     string
 	channelSecret string
-	channelToken  string
 	endpointBase  *url.URL     // default APIEndpointBase
 	httpClient    *http.Client // default http.DefaultClient
 }
@@ -123,13 +122,5 @@ func (client *Client) post(ctx context.Context, endpoint string, body io.Reader)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	return client.do(ctx, req)
-}
-
-func (client *Client) delete(ctx context.Context, endpoint string) (*http.Response, error) {
-	req, err := http.NewRequest("DELETE", client.url(endpoint), nil)
-	if err != nil {
-		return nil, err
-	}
 	return client.do(ctx, req)
 }
