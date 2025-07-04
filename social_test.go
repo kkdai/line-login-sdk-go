@@ -17,7 +17,7 @@ var (
 	userID       string
 )
 
-//Provide those data for testing.
+// Provide those data for testing
 func init() {
 	accessToken = os.Getenv("LINE_ACCESS_TOKEN")
 	refreshToken = os.Getenv("LINE_REFRESH_TOKEN")
@@ -49,7 +49,7 @@ func TestGetAccessToken(t *testing.T) {
 		t.Errorf("err: %v", err)
 	}
 
-	t.Logf(" data:= %v", ret)
+	t.Logf(" data:= %+v", ret)
 }
 
 func TestGetUserProfile(t *testing.T) {
@@ -68,11 +68,23 @@ func TestGetURLCode(t *testing.T) {
 	checkEnvVariables(t)
 
 	scope := "profile openid" //profile | openid | email
-	state := GenerateNonce()
-	nonce := GenerateNonce()
+	state, err := GenerateNonce()
+	if err != nil {
+		t.Errorf("GenerateNonce Error: %v", err)
+		return
+	}
+	nonce, err := GenerateNonce()
+	if err != nil {
+		t.Errorf("GenerateNonce Error: %v", err)
+		return
+	}
 
 	client, _ := New(cID, cSecret)
-	url := client.GetWebLoinURL(qURL, state, scope, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	url, err := client.GetWebLoinURL(qURL, state, scope, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	if err != nil {
+		t.Errorf("err: %v", err)
+		return
+	}
 	log.Println("url: ", url)
 }
 
@@ -80,14 +92,30 @@ func TestPKCEGetURLCode(t *testing.T) {
 	checkEnvVariables(t)
 
 	scope := "profile openid" //profile | openid | email
-	state := GenerateNonce()
-	nonce := GenerateNonce()
+	state, err := GenerateNonce()
+	if err != nil {
+		t.Errorf("GenerateNonce Error: %v", err)
+		return
+	}
+	nonce, err := GenerateNonce()
+	if err != nil {
+		t.Errorf("GenerateNonce Error: %v", err)
+		return
+	}
 
-	codeVer := GenerateCodeVerifier(43)
+	codeVer, err := GenerateCodeVerifier(43)
+	if err != nil {
+		t.Errorf("GenerateCodeVerifier Error: %v", err)
+		return
+	}
 	codeChallenge := PkceChallenge(codeVer)
 
 	client, _ := New(cID, cSecret)
-	url := client.GetPKCEWebLoinURL(qURL, state, scope, codeChallenge, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	url, err := client.GetPKCEWebLoinURL(qURL, state, scope, codeChallenge, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	if err != nil {
+		t.Errorf("err: %v", err)
+		return
+	}
 	log.Println("url: ", url)
 }
 
@@ -130,7 +158,11 @@ func TestRevokeToken(t *testing.T) {
 func TestVerifyIDToken(t *testing.T) {
 	checkEnvVariables(t)
 
-	nonce := GenerateNonce()
+	nonce, err := GenerateNonce()
+	if err != nil {
+		t.Errorf("GenerateNonce Error: %v", err)
+		return
+	}
 
 	client, _ := New(cID, cSecret)
 	ret, err := client.VerifyIDToken(iDToken, VerifyIDTokenRequestOptions{
@@ -147,7 +179,11 @@ func TestVerifyIDToken(t *testing.T) {
 func TestGetAccessTokenPKCE(t *testing.T) {
 	checkEnvVariables(t)
 
-	codeVer := GenerateCodeVerifier(43)
+	codeVer, err := GenerateCodeVerifier(43)
+	if err != nil {
+		t.Errorf("GenerateCodeVerifier Error: %v", err)
+		return
+	}
 
 	if len(code) == 0 {
 		t.Skip("Skip it since don't exist LINE login code.")
@@ -159,5 +195,5 @@ func TestGetAccessTokenPKCE(t *testing.T) {
 		t.Errorf("err: %v", err)
 	}
 
-	t.Logf(" data:= %v", ret)
+	t.Logf(" data:= %+v", ret)
 }

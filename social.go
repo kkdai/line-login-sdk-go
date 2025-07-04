@@ -2,10 +2,8 @@ package social
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"strings"
 )
@@ -64,17 +62,15 @@ func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 }
 
 // GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
-func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) string {
+func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) (string, error) {
 	u, err := url.Parse(APIEndpointAuthBase)
 	if err != nil {
-		log.Print(err)
-		os.Exit(1)
+		return "", err
 	}
 	u.Path = path.Join(u.Path, APIEndpointAuthorize)
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		log.Print(err)
-		os.Exit(1)
+		return "", err
 	}
 	q := req.URL.Query()
 	q.Add("response_type", "code")
@@ -100,21 +96,19 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 	}
 
 	req.URL.RawQuery = q.Encode()
-	return req.URL.String()
+	return req.URL.String(), nil
 }
 
 // GetPKCEWebLoinURL - LINE LOGIN 2.1 get LINE Login authorization request URL by PKCE
-func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) string {
+func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) (string, error) {
 	u, err := url.Parse(APIEndpointAuthBase)
 	if err != nil {
-		log.Print(err)
-		os.Exit(1)
+		return "", err
 	}
 	u.Path = path.Join(u.Path, APIEndpointAuthorize)
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		log.Print(err)
-		os.Exit(1)
+		return "", err
 	}
 	q := req.URL.Query()
 	q.Add("response_type", "code")
@@ -142,7 +136,7 @@ func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope 
 	}
 
 	req.URL.RawQuery = q.Encode()
-	return req.URL.String()
+	return req.URL.String(), nil
 }
 
 // TokenVerify: Verifies the access token.
@@ -172,8 +166,7 @@ func (call *TokenVerifyCall) WithContext(ctx context.Context) *TokenVerifyCall {
 func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
 	u, err := url.Parse(APIEndpointBase)
 	if err != nil {
-		log.Print(err)
-		os.Exit(1)
+		return nil, err
 	}
 	u.Path = path.Join(u.Path, APIEndpointTokenVerify)
 	req, err := http.NewRequest("GET", u.String(), nil)
