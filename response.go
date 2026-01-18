@@ -134,6 +134,20 @@ type GetFriendshipStatusResponse struct {
 	FriendFlag bool `json:"friendFlag"`
 }
 
+// GetUserInfoResponse type
+// OIDC-compliant response from /oauth2/v2.1/userinfo endpoint
+// https://developers.line.biz/en/reference/line-login/#userinfo
+type GetUserInfoResponse struct {
+	// Sub: User ID
+	Sub string `json:"sub"`
+
+	// Name: User's display name. Only included if the profile scope was specified.
+	Name string `json:"name,omitempty"`
+
+	// Picture: User's profile image URL. Only included if the profile scope was specified.
+	Picture string `json:"picture,omitempty"`
+}
+
 // TokenResponse type
 type TokenResponse struct {
 	// AccessToken: Access token. Valid for 30 days.
@@ -318,6 +332,18 @@ func decodeToGetFriendshipStatusResponse(res *http.Response) (*GetFriendshipStat
 	}
 	decoder := json.NewDecoder(res.Body)
 	result := GetFriendshipStatusResponse{}
+	if err := decoder.Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func decodeToGetUserInfoResponse(res *http.Response) (*GetUserInfoResponse, error) {
+	if err := checkResponse(res); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(res.Body)
+	result := GetUserInfoResponse{}
 	if err := decoder.Decode(&result); err != nil {
 		return nil, err
 	}
