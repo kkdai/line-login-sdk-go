@@ -444,6 +444,53 @@ func (call *GetUserInfoCall) Do() (*GetUserInfoResponse, error) {
 	return decodeToGetUserInfoResponse(res)
 }
 
+// Deauthorize: Revokes all permissions granted by a user and deauthorizes the application.
+// This API requires a channel access token (not a user access token) for authorization.
+// The user's access token is passed in the request body.
+// Useful for implementing "delete my account" functionality or GDPR compliance.
+// Note: Returns 204 No Content on success.
+// https://developers.line.biz/en/reference/line-login/#deauthorize
+func (client *Client) Deauthorize(channelAccessToken, userAccessToken string) *DeauthorizeCall {
+	return &DeauthorizeCall{
+		c:                  client,
+		channelAccessToken: channelAccessToken,
+		userAccessToken:    userAccessToken,
+	}
+}
+
+// DeauthorizeCall type
+type DeauthorizeCall struct {
+	c   *Client
+	ctx context.Context
+
+	channelAccessToken string
+	userAccessToken    string
+}
+
+// WithContext method
+func (call *DeauthorizeCall) WithContext(ctx context.Context) *DeauthorizeCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *DeauthorizeCall) Do() (*BasicResponse, error) {
+	data := url.Values{}
+	data.Set("userAccessToken", call.userAccessToken)
+
+	res, err := call.c.postWithBearerAuth(call.ctx, APIEndpointDeauthorize, call.channelAccessToken, strings.NewReader(data.Encode()))
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	if err := checkResponseNoContent(res); err != nil {
+		return nil, err
+	}
+	return &BasicResponse{}, nil
+}
+
 // GetAccessTokenPKCECall: Issues access token by PKCE.
 func (client *Client) GetAccessTokenPKCE(redirectURL, code, codeVerifier string) *GetAccessTokenPKCECall {
 	return &GetAccessTokenPKCECall{

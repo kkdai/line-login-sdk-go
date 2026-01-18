@@ -126,3 +126,13 @@ func (client *Client) post(ctx context.Context, endpoint string, body io.Reader)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	return client.do(ctx, req)
 }
+
+func (client *Client) postWithBearerAuth(ctx context.Context, endpoint string, bearerToken string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest("POST", client.url(endpoint), body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	return client.do(ctx, req)
+}
