@@ -21,6 +21,8 @@ const (
 	APIEndpointRevokeToken          = "/oauth2/v2.1/revoke"
 	APIEndpointGetUserProfile       = "/v2/profile"
 	APIEndpointGetFriendshipStratus = "/friendship/v1/status"
+	APIEndpointUserInfo             = "/oauth2/v2.1/userinfo"
+	APIEndpointDeauthorize          = "/user/v1/deauthorize"
 )
 
 // Client type

@@ -405,6 +405,45 @@ func (call *GetFriendshipStatusCall) Do() (*GetFriendshipStatusResponse, error) 
 	return decodeToGetFriendshipStatusResponse(res)
 }
 
+// GetUserInfo: Gets a user's ID, display name, and profile image.
+// This is the OIDC-compliant userinfo endpoint.
+// Note: Requires an access token with the openid scope. The name and picture fields are only included if the profile scope was also specified.
+// https://developers.line.biz/en/reference/line-login/#userinfo
+func (client *Client) GetUserInfo(accessToken string) *GetUserInfoCall {
+	return &GetUserInfoCall{
+		c:           client,
+		accessToken: accessToken,
+	}
+}
+
+// GetUserInfoCall type
+type GetUserInfoCall struct {
+	c   *Client
+	ctx context.Context
+
+	accessToken string
+}
+
+// WithContext method
+func (call *GetUserInfoCall) WithContext(ctx context.Context) *GetUserInfoCall {
+	call.ctx = ctx
+	return call
+}
+
+// Do method
+func (call *GetUserInfoCall) Do() (*GetUserInfoResponse, error) {
+	urlQuery := url.Values{}
+	urlQuery.Set("access_token", call.accessToken)
+	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointUserInfo, urlQuery)
+	if res != nil && res.Body != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeToGetUserInfoResponse(res)
+}
+
 // GetAccessTokenPKCECall: Issues access token by PKCE.
 func (client *Client) GetAccessTokenPKCE(redirectURL, code, codeVerifier string) *GetAccessTokenPKCECall {
 	return &GetAccessTokenPKCECall{
