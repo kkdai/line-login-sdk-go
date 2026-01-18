@@ -251,6 +251,23 @@ func checkResponse(res *http.Response) error {
 	return nil
 }
 
+func checkResponseNoContent(res *http.Response) error {
+	if res.StatusCode != http.StatusNoContent {
+		decoder := json.NewDecoder(res.Body)
+		result := ErrorResponse{}
+		if err := decoder.Decode(&result); err != nil {
+			return &APIError{
+				Code: res.StatusCode,
+			}
+		}
+		return &APIError{
+			Code:     res.StatusCode,
+			Response: &result,
+		}
+	}
+	return nil
+}
+
 func decodeToBasicResponse(res *http.Response) (*BasicResponse, error) {
 	if err := checkResponse(res); err != nil {
 		return nil, err
