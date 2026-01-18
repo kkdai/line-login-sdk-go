@@ -1,3 +1,3 @@
 package social
 
-const version = "0.3.1"
+const version = "0.8.0"
