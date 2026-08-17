@@ -1,6 +1,6 @@
 # LINE Login SDK for Go
 
-[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/kkdai/line-login-sdk-go/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/kkdai/line-login-sdk-go/main/LICENSE)
 [![GoDoc](https://godoc.org/github.com/kkdai/line-login-sdk-go?status.svg)](https://godoc.org/github.com/kkdai/line-login-sdk-go)
 [![Go Reference](https://pkg.go.dev/badge/github.com/kkdai/line-login-sdk-go.svg)](https://pkg.go.dev/github.com/kkdai/line-login-sdk-go)
 ![Go](https://github.com/kkdai/line-login-sdk-go/workflows/Go/badge.svg)
@@ -9,6 +9,10 @@
 A Go SDK for [LINE Login v2.1 API](https://developers.line.biz/en/reference/line-login/) with **100% API coverage**.
 
 > **Note:** This SDK was originally part of the Social API and has been migrated into LINE Login SDK since 2020/11/20. See [official announcement](https://developers.line.biz/en/news/2020/11/12/social-api-is-now-part-of-line-login/).
+
+## Requirements
+
+Go 1.23 or later.
 
 ## Installation
 
@@ -52,8 +56,15 @@ go get github.com/kkdai/line-login-sdk-go
 | `PkceChallenge()` | Generates PKCE code challenge |
 | `GenerateCodeVerifier()` | Generates PKCE code verifier |
 | `GenerateNonce()` | Generates nonce for CSRF protection |
-| `DecodePayload()` | Decodes ID token payload |
-| `DecodeLineProfilePlusPayload()` | Decodes LINE Profile+ payload |
+| `TokenResponse.DecodePayload()` | Decodes and verifies the ID token's basic claims (`iss`/`aud`) |
+| `TokenResponse.DecodeLineProfilePlusPayload()` | Decodes ID token claims including [LINE Profile+](https://developers.line.biz/en/docs/partner-docs/line-profile-plus/) fields |
+
+### Client Options
+
+| Option | Description |
+|--------|-------------|
+| `WithHTTPClient(c *http.Client)` | Use a custom `http.Client` (timeouts, proxies, retries, etc.) |
+| `WithEndpointBase(url string)` | Override the API base URL, e.g. for testing against a mock server |
 
 ## Quick Start
 
@@ -151,6 +162,74 @@ if err != nil {
     log.Fatal(err)
 }
 fmt.Println("User deauthorized successfully")
+```
+
+## More Examples
+
+```go
+// Refresh an access token
+refreshed, err := client.RefreshToken(tokenResponse.RefreshToken).Do()
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("New Access Token:", refreshed.AccessToken)
+
+// Verify an access token is still valid
+verify, err := client.TokenVerify(tokenResponse.AccessToken).Do()
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Scope:", verify.Scope, "Expires in:", verify.ExpiresIn)
+
+// Verify an ID token and read its claims
+idTokenClaims, err := client.VerifyIDToken(tokenResponse.IDToken, social.VerifyIDTokenRequestOptions{}).Do()
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Sub:", idTokenClaims.Sub)
+
+// Check friendship status with your LINE Official Account
+friendship, err := client.GetFriendshipStatus(tokenResponse.AccessToken).Do()
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Is friend:", friendship.FriendFlag)
+
+// Revoke an access token (e.g. on logout)
+if _, err := client.RevokeToken(tokenResponse.AccessToken).Do(); err != nil {
+    log.Fatal(err)
+}
+
+// Decode and verify the ID token payload locally
+payload, err := tokenResponse.DecodePayload("YOUR_CHANNEL_ID")
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Name:", payload.Name)
+```
+
+## Error Handling
+
+All API calls return an `*social.APIError` when LINE's API responds with a non-2xx status. It carries the HTTP status code and the parsed error body:
+
+```go
+profile, err := client.GetUserProfile(accessToken).Do()
+if err != nil {
+    var apiErr *social.APIError
+    if errors.As(err, &apiErr) {
+        fmt.Println("HTTP status:", apiErr.Code)
+        if apiErr.Response != nil {
+            fmt.Println("Message:", apiErr.Response.Message)
+        }
+    }
+    log.Fatal(err)
+}
+```
+
+## Testing
+
+```bash
+go test -v ./...
 ```
 
 ## Context Support
