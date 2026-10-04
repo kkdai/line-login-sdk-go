@@ -216,11 +216,21 @@ if err != nil {
 fmt.Println("Scope:", verify.Scope, "Expires in:", verify.ExpiresIn)
 
 // Verify an ID token and read its claims
-idTokenClaims, err := client.VerifyIDToken(tokenResponse.IDToken, social.VerifyIDTokenRequestOptions{}).Do()
+// (calls LINE's verify API; pass the nonce you sent in the authorization request)
+idTokenClaims, err := client.VerifyIDToken(tokenResponse.IDToken, social.VerifyIDTokenRequestOptions{Nonce: nonce}).Do()
 if err != nil {
     log.Fatal(err)
 }
 fmt.Println("Sub:", idTokenClaims.Sub)
+
+// Or verify the ID token locally, with no extra API round trip.
+// Checks the signature (ES256 via LINE's JWKS, or HS256 with your channel secret),
+// iss, aud, exp and nonce. The JWKS is fetched lazily and cached for an hour.
+payload, err := client.VerifyIDTokenLocal(tokenResponse.IDToken, social.VerifyIDTokenLocalOptions{Nonce: nonce}).Do()
+if err != nil {
+    log.Fatal(err) // errors.Is(err, social.ErrInvalidSignature) for a bad signature
+}
+fmt.Println("Sub:", payload.Sub, "Name:", payload.Name)
 
 // Check friendship status with your LINE Official Account
 friendship, err := client.GetFriendshipStatus(tokenResponse.AccessToken).Do()
