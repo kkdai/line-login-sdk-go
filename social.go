@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -61,6 +62,29 @@ func (call *GetAccessTokenCall) Do() (*TokenResponse, error) {
 	return decodeToTokenResponse(res)
 }
 
+// addAuthRequestOptions adds the optional authorization request parameters to q.
+func addAuthRequestOptions(q url.Values, options AuthRequestOptions) {
+	if len(options.Nonce) > 0 {
+		q.Add("nonce", options.Nonce)
+	}
+
+	if len(options.Prompt) > 0 {
+		q.Add("prompt", options.Prompt)
+	}
+
+	if len(options.UILocales) > 0 {
+		q.Add("ui_locales", options.UILocales)
+	}
+
+	if len(options.BotPrompt) > 0 {
+		q.Add("bot_prompt", options.BotPrompt)
+	}
+
+	if options.MaxAge > 0 {
+		q.Add("max_age", strconv.Itoa(options.MaxAge))
+	}
+}
+
 // GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
 func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) (string, error) {
 	u, err := url.Parse(APIEndpointAuthBase)
@@ -79,21 +103,7 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 	q.Add("state", state)
 	q.Add("scope", scope)
 
-	if len(options.Nonce) > 0 {
-		q.Add("nonce", options.Nonce)
-	}
-
-	if len(options.Prompt) > 0 {
-		q.Add("prompt", options.Prompt)
-	}
-
-	if len(options.UILocales) > 0 {
-		q.Add("ui_locales", options.UILocales)
-	}
-
-	if len(options.BotPrompt) > 0 {
-		q.Add("bot_prompt", options.BotPrompt)
-	}
+	addAuthRequestOptions(q, options)
 
 	req.URL.RawQuery = q.Encode()
 	return req.URL.String(), nil
@@ -119,21 +129,7 @@ func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope 
 	q.Add("code_challenge", codeChallenge)
 	q.Add("code_challenge_method", "S256")
 
-	if len(options.Nonce) > 0 {
-		q.Add("nonce", options.Nonce)
-	}
-
-	if len(options.Prompt) > 0 {
-		q.Add("prompt", options.Prompt)
-	}
-
-	if len(options.UILocales) > 0 {
-		q.Add("ui_locales", options.UILocales)
-	}
-
-	if len(options.BotPrompt) > 0 {
-		q.Add("bot_prompt", options.BotPrompt)
-	}
+	addAuthRequestOptions(q, options)
 
 	req.URL.RawQuery = q.Encode()
 	return req.URL.String(), nil
@@ -189,8 +185,8 @@ func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
 }
 
 // Refresh Token: Gets a new access token using a refresh token. Refresh tokens are returned with the access token when the user authorizes your app.
-//Note: This is the reference for the v2.1 endpoint. For the v2 reference, see Refresh access token v2.
-//Note: Cannot be used to refresh channel access tokens which are used for the Messaging API.
+// Note: This is the reference for the v2.1 endpoint. For the v2 reference, see Refresh access token v2.
+// Note: Cannot be used to refresh channel access tokens which are used for the Messaging API.
 func (client *Client) RefreshToken(refreshToken string) *RefreshTokenCall {
 	return &RefreshTokenCall{
 		c:            client,
@@ -231,8 +227,8 @@ func (call *RefreshTokenCall) Do() (*TokenRefreshResponse, error) {
 }
 
 // RevokeToken: Invalidates the access token.
-//Note: This is the reference for the v2.1 endpoint. For the v2 reference, see Revoke access token v2.
-//Note: Cannot be used to invalidate channel access tokens which are used for the Messaging API.
+// Note: This is the reference for the v2.1 endpoint. For the v2 reference, see Revoke access token v2.
+// Note: Cannot be used to invalidate channel access tokens which are used for the Messaging API.
 func (client *Client) RevokeToken(accessToken string) *RevokeTokenCall {
 	return &RevokeTokenCall{
 		c:           client,
@@ -285,8 +281,8 @@ func (client *Client) VerifyIDToken(iDToken string, options VerifyIDTokenRequest
 }
 
 type VerifyIDTokenRequestOptions struct {
-	nonce  string
-	userID string
+	Nonce  string
+	UserID string
 }
 
 // VerifyIDTokenCall type
@@ -310,12 +306,12 @@ func (call *VerifyIDTokenCall) Do() (*VerifyIDTokenResponse, error) {
 	data.Set("id_token", call.iDToken)
 	data.Set("client_id", call.c.channelID)
 
-	if call.options.nonce != "" {
-		data.Set("nonce", call.options.nonce)
+	if call.options.Nonce != "" {
+		data.Set("nonce", call.options.Nonce)
 	}
 
-	if call.options.userID != "" {
-		data.Set("user_id", call.options.userID)
+	if call.options.UserID != "" {
+		data.Set("user_id", call.options.UserID)
 	}
 
 	res, err := call.c.post(call.ctx, APIEndpointTokenVerify, strings.NewReader(data.Encode()))
@@ -331,7 +327,7 @@ func (call *VerifyIDTokenCall) Do() (*VerifyIDTokenResponse, error) {
 }
 
 // GetUserProfile: Gets a user's display name, profile image, and status message.
-//Note: Requires an access token with the profile scope. For more information, see Making an authorization request and Scopes.
+// Note: Requires an access token with the profile scope. For more information, see Making an authorization request and Scopes.
 func (client *Client) GetUserProfile(accessToken string) *GetUserProfileCall {
 	return &GetUserProfileCall{
 		c:           client,
@@ -368,8 +364,8 @@ func (call *GetUserProfileCall) Do() (*GetUserProfileResponse, error) {
 }
 
 // GetFriendshipStatus: Gets the friendship status of the user and the bot linked to your LINE Login channel.
-//Note: Requires an access token with the profile scope. For more information, see Making an authorization request and Scopes.
-//Note: You must have a bot linked with your channel. For more information, see Linking a bot with your LINE Login channel.
+// Note: Requires an access token with the profile scope. For more information, see Making an authorization request and Scopes.
+// Note: You must have a bot linked with your channel. For more information, see Linking a bot with your LINE Login channel.
 func (client *Client) GetFriendshipStatus(accessToken string) *GetFriendshipStatusCall {
 	return &GetFriendshipStatusCall{
 		c:           client,
