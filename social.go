@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 )
@@ -87,12 +86,7 @@ func addAuthRequestOptions(q url.Values, options AuthRequestOptions) {
 
 // GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
 func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) (string, error) {
-	u, err := url.Parse(APIEndpointAuthBase)
-	if err != nil {
-		return "", err
-	}
-	u.Path = path.Join(u.Path, APIEndpointAuthorize)
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequest("GET", client.authURL().String(), nil)
 	if err != nil {
 		return "", err
 	}
@@ -111,12 +105,7 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 
 // GetPKCEWebLoinURL - LINE LOGIN 2.1 get LINE Login authorization request URL by PKCE
 func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) (string, error) {
-	u, err := url.Parse(APIEndpointAuthBase)
-	if err != nil {
-		return "", err
-	}
-	u.Path = path.Join(u.Path, APIEndpointAuthorize)
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequest("GET", client.authURL().String(), nil)
 	if err != nil {
 		return "", err
 	}
@@ -160,12 +149,7 @@ func (call *TokenVerifyCall) WithContext(ctx context.Context) *TokenVerifyCall {
 
 // Do method
 func (call *TokenVerifyCall) Do() (*TokenVerifyResponse, error) {
-	u, err := url.Parse(APIEndpointBase)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = path.Join(u.Path, APIEndpointTokenVerify)
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequest("GET", call.c.url(APIEndpointTokenVerify), nil)
 	if err != nil {
 		return nil, err
 	}

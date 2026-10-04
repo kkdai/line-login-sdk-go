@@ -30,6 +30,7 @@ type Client struct {
 	channelID     string
 	channelSecret string
 	endpointBase  *url.URL     // default APIEndpointBase
+	authBase      *url.URL     // default APIEndpointAuthBase
 	httpClient    *http.Client // default http.DefaultClient
 }
 
@@ -62,6 +63,13 @@ func New(channelID, channelSecret string, options ...ClientOption) (*Client, err
 		}
 		c.endpointBase = u
 	}
+	if c.authBase == nil {
+		u, err := url.ParseRequestURI(APIEndpointAuthBase)
+		if err != nil {
+			return nil, err
+		}
+		c.authBase = u
+	}
 	return c, nil
 }
 
@@ -83,6 +91,25 @@ func WithEndpointBase(endpointBase string) ClientOption {
 		client.endpointBase = u
 		return nil
 	}
+}
+
+// WithAuthEndpointBase sets the base URL used to build authorization request URLs
+// (default APIEndpointAuthBase).
+func WithAuthEndpointBase(authEndpointBase string) ClientOption {
+	return func(client *Client) error {
+		u, err := url.ParseRequestURI(authEndpointBase)
+		if err != nil {
+			return err
+		}
+		client.authBase = u
+		return nil
+	}
+}
+
+func (client *Client) authURL() *url.URL {
+	u := *client.authBase
+	u.Path = path.Join(u.Path, APIEndpointAuthorize)
+	return &u
 }
 
 func (client *Client) url(endpoint string) string {

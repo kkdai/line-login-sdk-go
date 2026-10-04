@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // BasicResponse type
@@ -174,63 +175,102 @@ type TokenResponse struct {
 	TokenType string `json:"token_type"`
 }
 
-// DecodePayload : decode payload result.
-func (t TokenResponse) DecodePayload(channelID string) (*BasicPayload, error) {
-	splitToken := strings.Split(t.IDToken, ".")
+// DecodePayloadOptions configures optional checks performed by DecodePayloadWithOptions.
+type DecodePayloadOptions struct {
+	// Nonce: if not empty, the "nonce" claim must match it.
+	Nonce string
+
+	// CheckExpiry: if true, the "exp" claim must be in the future.
+	CheckExpiry bool
+
+	// Now overrides the current time used by CheckExpiry (default time.Now). Useful for tests.
+	Now func() time.Time
+}
+
+// decodeIDTokenPayload splits a JWT, base64url-decodes its payload segment into out.
+// The signature is NOT verified.
+func decodeIDTokenPayload(idToken string, out interface{}) error {
+	splitToken := strings.Split(idToken, ".")
 	if len(splitToken) != 3 {
-		return nil, fmt.Errorf("idToken size is wrong")
+		return fmt.Errorf("idToken size is wrong")
 	}
 
-	payloadSegment := splitToken[1]
-	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
+	decodedPayload, err := b64.RawURLEncoding.DecodeString(splitToken[1])
 	if err != nil {
-		return nil, fmt.Errorf("base64url decode error: %w", err)
+		return fmt.Errorf("base64url decode error: %w", err)
 	}
 
+	if err := json.Unmarshal(decodedPayload, out); err != nil {
+		return fmt.Errorf("json unmarshal error: %w", err)
+	}
+	return nil
+}
+
+func (p *BasicPayload) validate(channelID string, opts DecodePayloadOptions) error {
+	if p.Iss != "https://access.line.me" {
+		return fmt.Errorf("payload verification failed: wrong issuer")
+	}
+
+	if p.Aud != channelID {
+		return fmt.Errorf("payload verification failed: wrong audience")
+	}
+
+	if opts.Nonce != "" && p.Nonce != opts.Nonce {
+		return fmt.Errorf("payload verification failed: wrong nonce")
+	}
+
+	if opts.CheckExpiry {
+		now := time.Now
+		if opts.Now != nil {
+			now = opts.Now
+		}
+		if int64(p.Exp) <= now().Unix() {
+			return fmt.Errorf("payload verification failed: token expired")
+		}
+	}
+	return nil
+}
+
+// DecodePayload : decode payload result.
+//
+// WARNING: this only decodes the payload and checks "iss" and "aud". It does NOT verify
+// the JWT signature, "exp" or "nonce". Use DecodePayloadWithOptions to also check
+// "exp" and "nonce", and VerifyIDToken to have LINE verify the token.
+func (t TokenResponse) DecodePayload(channelID string) (*BasicPayload, error) {
+	return t.DecodePayloadWithOptions(channelID, DecodePayloadOptions{})
+}
+
+// DecodePayloadWithOptions decodes the ID token payload and checks "iss" and "aud",
+// plus "nonce" and "exp" as requested by opts. The JWT signature is NOT verified.
+func (t TokenResponse) DecodePayloadWithOptions(channelID string, opts DecodePayloadOptions) (*BasicPayload, error) {
 	retPayload := &BasicPayload{}
-	if err := json.Unmarshal(decodedPayload, retPayload); err != nil {
-		return nil, fmt.Errorf("json unmarshal error: %v", err)
+	if err := decodeIDTokenPayload(t.IDToken, retPayload); err != nil {
+		return nil, err
 	}
-
-	// payload verification
-	if retPayload.Iss != "https://access.line.me" {
-		return nil, fmt.Errorf("payload verification failed: wrong issuer")
+	if err := retPayload.validate(channelID, opts); err != nil {
+		return nil, err
 	}
-
-	if retPayload.Aud != channelID {
-		return nil, fmt.Errorf("payload verification failed: wrong audience")
-	}
-
 	return retPayload, nil
 }
 
 // DecodeLineProfilePlusPayload : decode line profile+ payload result.
 // https://developers.line.biz/en/docs/partner-docs/line-profile-plus/#id-token
+//
+// WARNING: like DecodePayload, this does NOT verify the signature, "exp" or "nonce".
 func (t TokenResponse) DecodeLineProfilePlusPayload(channelID string) (*LineProfilePlusPayload, error) {
-	splitToken := strings.Split(t.IDToken, ".")
-	if len(splitToken) < 3 {
-		return nil, fmt.Errorf("idToken size is wrong")
-	}
+	return t.DecodeLineProfilePlusPayloadWithOptions(channelID, DecodePayloadOptions{})
+}
 
-	payloadSegment := splitToken[1]
-	decodedPayload, err := b64.RawURLEncoding.DecodeString(payloadSegment)
-	if err != nil {
-		return nil, fmt.Errorf("base64url decode error: %w", err)
-	}
-
+// DecodeLineProfilePlusPayloadWithOptions is DecodeLineProfilePlusPayload with optional
+// "nonce" and "exp" checks. The JWT signature is NOT verified.
+func (t TokenResponse) DecodeLineProfilePlusPayloadWithOptions(channelID string, opts DecodePayloadOptions) (*LineProfilePlusPayload, error) {
 	retPayload := &LineProfilePlusPayload{}
-	if err := json.Unmarshal(decodedPayload, retPayload); err != nil {
-		return nil, fmt.Errorf("json unmarshal error: %w", err)
+	if err := decodeIDTokenPayload(t.IDToken, retPayload); err != nil {
+		return nil, err
 	}
-
-	if retPayload.Iss != "https://access.line.me" {
-		return nil, fmt.Errorf("payload verification failed: wrong issuer")
+	if err := retPayload.BasicPayload.validate(channelID, opts); err != nil {
+		return nil, err
 	}
-
-	if retPayload.Aud != channelID {
-		return nil, fmt.Errorf("payload verification failed: wrong audience")
-	}
-
 	return retPayload, nil
 }
 
