@@ -30,3 +30,23 @@ func TestCodeVerifier(t *testing.T) {
 		t.Errorf("CodeVerifier Error: \ncodeVer=%s\n", cv1)
 	}
 }
+
+func TestGenerateNonceIsRandomAndURLSafe(t *testing.T) {
+	seen := map[string]bool{}
+	for i := 0; i < 100; i++ {
+		n, err := GenerateNonce()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(n) != 22 { // 16 bytes, base64url without padding
+			t.Fatalf("len(%q) = %d, want 22", n, len(n))
+		}
+		if strings.ContainsAny(n, "+/=") {
+			t.Fatalf("nonce %q is not URL safe", n)
+		}
+		if seen[n] {
+			t.Fatalf("duplicate nonce %q", n)
+		}
+		seen[n] = true
+	}
+}
