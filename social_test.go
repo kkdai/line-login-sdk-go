@@ -80,7 +80,7 @@ func TestGetURLCode(t *testing.T) {
 	}
 
 	client, _ := New(cID, cSecret)
-	url, err := client.GetWebLoinURL(qURL, state, scope, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	url, err := client.GetWebLoginURL(qURL, state, scope, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
 	if err != nil {
 		t.Errorf("err: %v", err)
 		return
@@ -111,7 +111,7 @@ func TestPKCEGetURLCode(t *testing.T) {
 	codeChallenge := PkceChallenge(codeVer)
 
 	client, _ := New(cID, cSecret)
-	url, err := client.GetPKCEWebLoinURL(qURL, state, scope, codeChallenge, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
+	url, err := client.GetPKCEWebLoginURL(qURL, state, scope, codeChallenge, AuthRequestOptions{Nonce: nonce, BotPrompt: "normal", Prompt: "consent"})
 	if err != nil {
 		t.Errorf("err: %v", err)
 		return

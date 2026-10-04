@@ -83,7 +83,7 @@ func TestTokenVerifyHonorsEndpointBase(t *testing.T) {
 
 func TestWithAuthEndpointBase(t *testing.T) {
 	client, _ := New("cid", "secret", WithAuthEndpointBase("http://localhost:1234"))
-	raw, err := client.GetWebLoinURL("https://example.com/cb", "s", "profile", AuthRequestOptions{})
+	raw, err := client.GetWebLoginURL("https://example.com/cb", "s", "profile", AuthRequestOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +91,7 @@ func TestWithAuthEndpointBase(t *testing.T) {
 	if u.Host != "localhost:1234" || u.Path != APIEndpointAuthorize {
 		t.Errorf("unexpected url %s", raw)
 	}
-	raw, _ = client.GetPKCEWebLoinURL("https://example.com/cb", "s", "profile", "c", AuthRequestOptions{})
+	raw, _ = client.GetPKCEWebLoginURL("https://example.com/cb", "s", "profile", "c", AuthRequestOptions{})
 	if u, _ := url.Parse(raw); u.Host != "localhost:1234" {
 		t.Errorf("pkce url ignores auth base: %s", raw)
 	}

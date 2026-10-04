@@ -1,7 +1,9 @@
 package social
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,9 +16,21 @@ type AuthRequestOptions struct {
 	MaxAge    int
 	UILocales string
 	BotPrompt string
+
+	// InitialAMRDisplay: set to "lineqr" to show the QR code login screen by default.
+	InitialAMRDisplay string
+
+	// SwitchAMR: set to false to hide the buttons for switching login methods. Omitted when nil.
+	SwitchAMR *bool
+
+	// DisableAutoLogin: set to true to disable automatic login.
+	DisableAutoLogin bool
+
+	// DisableIOSAutoLogin: set to true to disable automatic login on iOS.
+	DisableIOSAutoLogin bool
 }
 
-// GetAcceessToken: Issues access token.
+// GetAccessToken: Issues access token.
 func (client *Client) GetAccessToken(redirectURL, code string) *GetAccessTokenCall {
 	return &GetAccessTokenCall{
 		c:           client,
@@ -82,10 +96,40 @@ func addAuthRequestOptions(q url.Values, options AuthRequestOptions) {
 	if options.MaxAge > 0 {
 		q.Add("max_age", strconv.Itoa(options.MaxAge))
 	}
+
+	if len(options.InitialAMRDisplay) > 0 {
+		q.Add("initial_amr_display", options.InitialAMRDisplay)
+	}
+
+	if options.SwitchAMR != nil {
+		q.Add("switch_amr", strconv.FormatBool(*options.SwitchAMR))
+	}
+
+	if options.DisableAutoLogin {
+		q.Add("disable_auto_login", "true")
+	}
+
+	if options.DisableIOSAutoLogin {
+		q.Add("disable_ios_auto_login", "true")
+	}
 }
 
-// GetWebLoinURL - LINE LOGIN 2.1 get LINE Login  authorization request URL
+// GetWebLoinURL is the misspelled former name of GetWebLoginURL.
+//
+// Deprecated: use GetWebLoginURL.
 func (client *Client) GetWebLoinURL(redirectURL string, state string, scope string, options AuthRequestOptions) (string, error) {
+	return client.GetWebLoginURL(redirectURL, state, scope, options)
+}
+
+// GetPKCEWebLoinURL is the misspelled former name of GetPKCEWebLoginURL.
+//
+// Deprecated: use GetPKCEWebLoginURL.
+func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) (string, error) {
+	return client.GetPKCEWebLoginURL(redirectURL, state, scope, codeChallenge, options)
+}
+
+// GetWebLoginURL - LINE LOGIN 2.1 get LINE Login authorization request URL
+func (client *Client) GetWebLoginURL(redirectURL string, state string, scope string, options AuthRequestOptions) (string, error) {
 	req, err := http.NewRequest("GET", client.authURL().String(), nil)
 	if err != nil {
 		return "", err
@@ -103,8 +147,8 @@ func (client *Client) GetWebLoinURL(redirectURL string, state string, scope stri
 	return req.URL.String(), nil
 }
 
-// GetPKCEWebLoinURL - LINE LOGIN 2.1 get LINE Login authorization request URL by PKCE
-func (client *Client) GetPKCEWebLoinURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) (string, error) {
+// GetPKCEWebLoginURL - LINE LOGIN 2.1 get LINE Login authorization request URL by PKCE
+func (client *Client) GetPKCEWebLoginURL(redirectURL string, state string, scope string, codeChallenge string, options AuthRequestOptions) (string, error) {
 	req, err := http.NewRequest("GET", client.authURL().String(), nil)
 	if err != nil {
 		return "", err
@@ -375,7 +419,7 @@ func (call *GetFriendshipStatusCall) WithContext(ctx context.Context) *GetFriend
 func (call *GetFriendshipStatusCall) Do() (*GetFriendshipStatusResponse, error) {
 	urlQuery := url.Values{}
 	urlQuery.Set("access_token", call.accessToken)
-	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointGetFriendshipStratus, urlQuery)
+	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointGetFriendshipStatus, urlQuery)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
@@ -402,6 +446,7 @@ type GetUserInfoCall struct {
 	ctx context.Context
 
 	accessToken string
+	usePost     bool
 }
 
 // WithContext method
@@ -410,11 +455,23 @@ func (call *GetUserInfoCall) WithContext(ctx context.Context) *GetUserInfoCall {
 	return call
 }
 
+// WithPost makes the call use HTTP POST instead of GET (both are supported by the endpoint).
+func (call *GetUserInfoCall) WithPost() *GetUserInfoCall {
+	call.usePost = true
+	return call
+}
+
 // Do method
 func (call *GetUserInfoCall) Do() (*GetUserInfoResponse, error) {
-	urlQuery := url.Values{}
-	urlQuery.Set("access_token", call.accessToken)
-	res, err := call.c.getHeaderAuth(call.ctx, APIEndpointUserInfo, urlQuery)
+	var res *http.Response
+	var err error
+	if call.usePost {
+		res, err = call.c.postWithBearerAuth(call.ctx, APIEndpointUserInfo, call.accessToken, nil)
+	} else {
+		urlQuery := url.Values{}
+		urlQuery.Set("access_token", call.accessToken)
+		res, err = call.c.getHeaderAuth(call.ctx, APIEndpointUserInfo, urlQuery)
+	}
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
@@ -455,10 +512,12 @@ func (call *DeauthorizeCall) WithContext(ctx context.Context) *DeauthorizeCall {
 
 // Do method
 func (call *DeauthorizeCall) Do() (*BasicResponse, error) {
-	data := url.Values{}
-	data.Set("userAccessToken", call.userAccessToken)
+	body, err := json.Marshal(map[string]string{"userAccessToken": call.userAccessToken})
+	if err != nil {
+		return nil, err
+	}
 
-	res, err := call.c.postWithBearerAuth(call.ctx, APIEndpointDeauthorize, call.channelAccessToken, strings.NewReader(data.Encode()))
+	res, err := call.c.postJSONWithBearerAuth(call.ctx, APIEndpointDeauthorize, call.channelAccessToken, bytes.NewReader(body))
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
