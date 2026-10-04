@@ -77,6 +77,19 @@ type TokenVerifyResponse struct {
 	ExpiresIn int    `json:"expires_in"`
 }
 
+// Validate performs the checks recommended by the LINE Login security checklist:
+// client_id must equal your channel ID and expires_in must be positive.
+// https://developers.line.biz/en/docs/line-login/security-checklist/
+func (r *TokenVerifyResponse) Validate(channelID string) error {
+	if r.ClientID != channelID {
+		return fmt.Errorf("access token verification failed: client_id does not match channel ID")
+	}
+	if r.ExpiresIn <= 0 {
+		return fmt.Errorf("access token verification failed: token expired")
+	}
+	return nil
+}
+
 // Token refresh type
 type TokenRefreshResponse struct {
 	// TokenType: Bearer
@@ -280,12 +293,14 @@ func checkResponse(res *http.Response) error {
 		result := ErrorResponse{}
 		if err := decoder.Decode(&result); err != nil {
 			return &APIError{
-				Code: res.StatusCode,
+				Code:      res.StatusCode,
+				RequestID: res.Header.Get("x-line-request-id"),
 			}
 		}
 		return &APIError{
-			Code:     res.StatusCode,
-			Response: &result,
+			Code:      res.StatusCode,
+			Response:  &result,
+			RequestID: res.Header.Get("x-line-request-id"),
 		}
 	}
 	return nil
@@ -297,12 +312,14 @@ func checkResponseNoContent(res *http.Response) error {
 		result := ErrorResponse{}
 		if err := decoder.Decode(&result); err != nil {
 			return &APIError{
-				Code: res.StatusCode,
+				Code:      res.StatusCode,
+				RequestID: res.Header.Get("x-line-request-id"),
 			}
 		}
 		return &APIError{
-			Code:     res.StatusCode,
-			Response: &result,
+			Code:      res.StatusCode,
+			Response:  &result,
+			RequestID: res.Header.Get("x-line-request-id"),
 		}
 	}
 	return nil

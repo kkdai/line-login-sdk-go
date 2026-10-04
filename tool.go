@@ -26,12 +26,14 @@ func GenerateCodeVerifier(length int) (string, error) {
 	return randStringRunes(length)
 }
 
+// GenerateNonce: Generate a random, URL-safe string with 128 bits of entropy.
+// Suitable for the OAuth "state" and OIDC "nonce" parameters.
 func GenerateNonce() (string, error) {
-	randomStr, err := randStringRunes(8)
-	if err != nil {
+	var buf [16]byte
+	if _, err := rand.Read(buf[:]); err != nil {
 		return "", err
 	}
-	return b64.StdEncoding.EncodeToString([]byte(randomStr)), nil
+	return b64.RawURLEncoding.EncodeToString(buf[:]), nil
 }
 
 func randStringRunes(n int) (string, error) {
@@ -39,12 +41,17 @@ func randStringRunes(n int) (string, error) {
 	letterRunesLen := len(letterRunes)
 	for range n {
 		var randomBytes [1]byte
-		_, err := rand.Read(randomBytes[:])
-		if err != nil {
-			return "", err
+		for {
+			_, err := rand.Read(randomBytes[:])
+			if err != nil {
+				return "", err
+			}
+			// reject values that would make the modulo biased
+			if int(randomBytes[0]) < 256-256%letterRunesLen {
+				break
+			}
 		}
-		index := int(randomBytes[0]) % letterRunesLen
-		result = append(result, letterRunes[index])
+		result = append(result, letterRunes[int(randomBytes[0])%letterRunesLen])
 	}
 	return string(result), nil
 }

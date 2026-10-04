@@ -173,6 +173,31 @@ if err != nil {
 fmt.Println("User deauthorized successfully")
 ```
 
+## Security Checklist
+
+Following the [LINE Login security checklist](https://developers.line.biz/en/docs/line-login/security-checklist/):
+
+- Use a fresh, unpredictable `state` per login (`GenerateNonce()` returns 128 random bits) and compare it with the `state` on your callback. Keep it in a server session or a same-origin cookie.
+- Use an HTTPS `redirect_uri` that exactly matches the registered callback URL.
+- Verify tokens on your backend. For an access token, call `TokenVerify()` and then `Validate(channelID)` on the result (checks `client_id` and `expires_in`). For an ID token, use `VerifyIDToken()` or `VerifyIDTokenLocal()` with the `nonce` you sent.
+- Never expose the channel secret to clients.
+- When a user unregisters from your service, call `Deauthorize()` (see above); this is required by the [development guidelines](https://developers.line.biz/en/docs/line-login/development-guidelines/).
+- Keep logs for troubleshooting. `*APIError` carries the `x-line-request-id` response header in `RequestID`; log it along with the status code.
+
+```go
+res, err := client.TokenVerify(accessToken).Do()
+if err == nil {
+    err = res.Validate("YOUR_CHANNEL_ID")
+}
+
+if _, err := client.GetUserProfile(accessToken).Do(); err != nil {
+    var apiErr *social.APIError
+    if errors.As(err, &apiErr) {
+        log.Printf("status=%d request_id=%s", apiErr.Code, apiErr.RequestID)
+    }
+}
+```
+
 ## More Examples
 
 ```go

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -261,4 +262,34 @@ func TestOfflineIssueStatelessChannelAccessToken(t *testing.T) {
 		t.Errorf("request %s %s ctype=%q", got.method, got.path, got.ctype)
 	}
 	checkForm(t, got.form, map[string]string{"grant_type": "client_credentials", "client_id": "cid", "client_secret": "secret"})
+}
+
+func TestOfflineAPIErrorCarriesRequestID(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("x-line-request-id", "req-123")
+		w.WriteHeader(429)
+		io.WriteString(w, `{"message":"too many requests"}`)
+	}))
+	defer srv.Close()
+	client, _ := New("cid", "secret", WithEndpointBase(srv.URL))
+	_, err := client.GetUserProfile("a").Do()
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) || apiErr.Code != 429 || apiErr.RequestID != "req-123" {
+		t.Fatalf("unexpected error %#v", err)
+	}
+	if !strings.Contains(err.Error(), "req-123") {
+		t.Errorf("error string lacks request id: %s", err)
+	}
+}
+
+func TestTokenVerifyResponseValidate(t *testing.T) {
+	if err := (&TokenVerifyResponse{ClientID: "cid", ExpiresIn: 10}).Validate("cid"); err != nil {
+		t.Errorf("valid response rejected: %v", err)
+	}
+	if err := (&TokenVerifyResponse{ClientID: "other", ExpiresIn: 10}).Validate("cid"); err == nil {
+		t.Error("client_id mismatch accepted")
+	}
+	if err := (&TokenVerifyResponse{ClientID: "cid", ExpiresIn: 0}).Validate("cid"); err == nil {
+		t.Error("expired token accepted")
+	}
 }
