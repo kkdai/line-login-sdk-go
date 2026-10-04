@@ -16,6 +16,8 @@ type captured struct {
 	auth   string
 	query  url.Values
 	form   url.Values
+	ctype  string
+	raw    string
 }
 
 // newMockClient starts a server answering every request with status/body and
@@ -30,6 +32,8 @@ func newMockClient(t *testing.T, status int, body string) (*Client, *captured) {
 		got.auth = r.Header.Get("Authorization")
 		got.query = r.URL.Query()
 		got.form, _ = url.ParseQuery(string(b))
+		got.raw = string(b)
+		got.ctype = r.Header.Get("Content-Type")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
 		io.WriteString(w, body)
@@ -137,7 +141,7 @@ func TestOfflineGetFriendshipStatus(t *testing.T) {
 	if !res.FriendFlag {
 		t.Errorf("unexpected response %+v", res)
 	}
-	if got.method != "GET" || got.path != APIEndpointGetFriendshipStratus || got.auth != "Bearer at1" {
+	if got.method != "GET" || got.path != APIEndpointGetFriendshipStatus || got.auth != "Bearer at1" {
 		t.Errorf("request %s %s auth=%q", got.method, got.path, got.auth)
 	}
 }
@@ -164,7 +168,23 @@ func TestOfflineDeauthorize(t *testing.T) {
 	if got.method != "POST" || got.path != APIEndpointDeauthorize || got.auth != "Bearer cat" {
 		t.Errorf("request %s %s auth=%q", got.method, got.path, got.auth)
 	}
-	checkForm(t, got.form, map[string]string{"userAccessToken": "uat"})
+	if got.ctype != "application/json" || got.raw != `{"userAccessToken":"uat"}` {
+		t.Errorf("content-type=%q body=%q", got.ctype, got.raw)
+	}
+}
+
+func TestOfflineGetUserInfoPost(t *testing.T) {
+	client, got := newMockClient(t, 200, `{"sub":"U1"}`)
+	res, err := client.GetUserInfo("at1").WithPost().Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Sub != "U1" {
+		t.Errorf("unexpected response %+v", res)
+	}
+	if got.method != "POST" || got.path != APIEndpointUserInfo || got.auth != "Bearer at1" {
+		t.Errorf("request %s %s auth=%q", got.method, got.path, got.auth)
+	}
 }
 
 func TestOfflineDeauthorizeNon204IsError(t *testing.T) {

@@ -15,15 +15,21 @@ const (
 	APIEndpointAuthBase  = "https://access.line.me"
 	APIEndpointAuthorize = "/oauth2/v2.1/authorize"
 
-	APIEndpointBase                 = "https://api.line.me"
-	APIEndpointToken                = "/oauth2/v2.1/token"
-	APIEndpointTokenVerify          = "/oauth2/v2.1/verify"
-	APIEndpointRevokeToken          = "/oauth2/v2.1/revoke"
-	APIEndpointGetUserProfile       = "/v2/profile"
-	APIEndpointGetFriendshipStratus = "/friendship/v1/status"
-	APIEndpointUserInfo             = "/oauth2/v2.1/userinfo"
-	APIEndpointDeauthorize          = "/user/v1/deauthorize"
+	APIEndpointBase                = "https://api.line.me"
+	APIEndpointToken               = "/oauth2/v2.1/token"
+	APIEndpointTokenVerify         = "/oauth2/v2.1/verify"
+	APIEndpointRevokeToken         = "/oauth2/v2.1/revoke"
+	APIEndpointGetUserProfile      = "/v2/profile"
+	APIEndpointGetFriendshipStatus = "/friendship/v1/status"
+	APIEndpointUserInfo            = "/oauth2/v2.1/userinfo"
+	APIEndpointDeauthorize         = "/user/v1/deauthorize"
+	APIEndpointJWKS                = "/oauth2/v2.1/certs"
 )
+
+// APIEndpointGetFriendshipStratus is the misspelled former name of APIEndpointGetFriendshipStatus.
+//
+// Deprecated: use APIEndpointGetFriendshipStatus.
+const APIEndpointGetFriendshipStratus = APIEndpointGetFriendshipStatus
 
 // Client type
 type Client struct {
@@ -151,6 +157,16 @@ func (client *Client) post(ctx context.Context, endpoint string, body io.Reader)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return client.do(ctx, req)
+}
+
+func (client *Client) postJSONWithBearerAuth(ctx context.Context, endpoint string, bearerToken string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest("POST", client.url(endpoint), body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
 	return client.do(ctx, req)
 }
 

@@ -51,8 +51,8 @@ go get github.com/kkdai/line-login-sdk-go
 
 | Function | Description |
 |----------|-------------|
-| `GetWebLoinURL()` | Generates LINE Login authorization URL |
-| `GetPKCEWebLoinURL()` | Generates authorization URL with PKCE |
+| `GetWebLoginURL()` | Generates LINE Login authorization URL |
+| `GetPKCEWebLoginURL()` | Generates authorization URL with PKCE |
 | `PkceChallenge()` | Generates PKCE code challenge |
 | `GenerateCodeVerifier()` | Generates PKCE code verifier |
 | `GenerateNonce()` | Generates nonce for CSRF protection |
@@ -86,7 +86,7 @@ func main() {
     }
 
     // Generate LINE Login URL
-    loginURL, err := client.GetWebLoinURL(
+    loginURL, err := client.GetWebLoginURL(
         "https://your-callback-url.com/callback",
         "random-state",
         "profile openid email",
@@ -136,7 +136,7 @@ if err != nil {
 codeChallenge := social.PkceChallenge(codeVerifier)
 
 // Generate authorization URL with PKCE
-loginURL, err := client.GetPKCEWebLoinURL(
+loginURL, err := client.GetPKCEWebLoginURL(
     "https://your-callback-url.com/callback",
     "random-state",
     "profile openid",
