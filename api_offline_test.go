@@ -209,6 +209,7 @@ func TestOfflineAPIErrors(t *testing.T) {
 		"GetFriendshipStatus": func(c *Client) error { _, err := c.GetFriendshipStatus("a").Do(); return err },
 		"GetUserInfo":         func(c *Client) error { _, err := c.GetUserInfo("a").Do(); return err },
 		"Deauthorize":         func(c *Client) error { _, err := c.Deauthorize("c", "u").Do(); return err },
+		"IssueStatelessToken": func(c *Client) error { _, err := c.IssueStatelessChannelAccessToken().Do(); return err },
 	}
 	for name, call := range calls {
 		t.Run(name, func(t *testing.T) {
@@ -245,4 +246,19 @@ func TestOfflineContextCanceled(t *testing.T) {
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("expected context.Canceled, got %v", err)
 	}
+}
+
+func TestOfflineIssueStatelessChannelAccessToken(t *testing.T) {
+	client, got := newMockClient(t, 200, `{"access_token":"cat","expires_in":900,"token_type":"Bearer"}`)
+	res, err := client.IssueStatelessChannelAccessToken().Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.AccessToken != "cat" || res.ExpiresIn != 900 || res.TokenType != "Bearer" {
+		t.Errorf("unexpected response %+v", res)
+	}
+	if got.method != "POST" || got.path != APIEndpointChannelTokenV3 || got.ctype != "application/x-www-form-urlencoded" {
+		t.Errorf("request %s %s ctype=%q", got.method, got.path, got.ctype)
+	}
+	checkForm(t, got.form, map[string]string{"grant_type": "client_credentials", "client_id": "cid", "client_secret": "secret"})
 }

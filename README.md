@@ -47,6 +47,7 @@ go get github.com/kkdai/line-login-sdk-go
 | API | Method | Description |
 |-----|--------|-------------|
 | [Deauthorize](https://developers.line.biz/en/reference/line-login/#deauthorize) | `Deauthorize()` | Revokes user permissions (for GDPR compliance) |
+| [Issue stateless channel access token](https://developers.line.biz/en/docs/basics/channel-access-token/#stateless-channel-access-tokens) | `IssueStatelessChannelAccessToken()` | Issues a 15-minute channel access token for use with `Deauthorize()` |
 
 ### Utility Functions
 
@@ -157,9 +158,15 @@ tokenResponse, err := client.GetAccessTokenPKCE(
 ## Deauthorize User (GDPR Compliance)
 
 ```go
+// Deauthorize needs a channel access token, not a user access token.
+// Issue a short-lived (15 min) stateless channel access token with your channel ID/secret:
+tokenRes, err := client.IssueStatelessChannelAccessToken().Do()
+if err != nil {
+    log.Fatal(err)
+}
+
 // Revoke all user permissions
-// Requires channel access token, not user access token
-_, err := client.Deauthorize(channelAccessToken, userAccessToken).Do()
+_, err = client.Deauthorize(tokenRes.AccessToken, userAccessToken).Do()
 if err != nil {
     log.Fatal(err)
 }

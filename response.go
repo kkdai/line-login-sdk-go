@@ -335,6 +335,17 @@ func decodeToTokenResponse(res *http.Response) (*TokenResponse, error) {
 	return &result, nil
 }
 
+func decodeToChannelAccessTokenResponse(res *http.Response) (*ChannelAccessTokenResponse, error) {
+	if err := checkResponse(res); err != nil {
+		return nil, err
+	}
+	result := ChannelAccessTokenResponse{}
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 func decodeToTokenVerifyResponse(res *http.Response) (*TokenVerifyResponse, error) {
 	if err := checkResponse(res); err != nil {
 		return nil, err
