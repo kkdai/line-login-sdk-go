@@ -32,6 +32,7 @@ go get github.com/kkdai/line-login-sdk-go
 | [Refresh access token](https://developers.line.biz/en/reference/line-login/#refresh-access-token) | `RefreshToken()` | Refreshes access tokens |
 | [Revoke access token](https://developers.line.biz/en/reference/line-login/#revoke-access-token) | `RevokeToken()` | Revokes access tokens |
 | [Verify ID token](https://developers.line.biz/en/reference/line-login/#verify-id-token) | `VerifyIDToken()` | Verifies ID token authenticity |
+| [Verify ID token locally](https://developers.line.biz/en/docs/line-login/verify-id-token/) | `VerifyIDTokenLocal()` | Verifies signature (ES256 via JWKS, or HS256), `iss`, `aud`, `exp`, `nonce` without calling the verify API |
 
 ### User
 
@@ -56,7 +57,7 @@ go get github.com/kkdai/line-login-sdk-go
 | `PkceChallenge()` | Generates PKCE code challenge |
 | `GenerateCodeVerifier()` | Generates PKCE code verifier |
 | `GenerateNonce()` | Generates nonce for CSRF protection |
-| `TokenResponse.DecodePayload()` | Decodes and verifies the ID token's basic claims (`iss`/`aud`) |
+| `TokenResponse.DecodePayload()` | Decodes the ID token and checks `iss`/`aud`. **Does not verify the signature**; use `DecodePayloadWithOptions()` for `nonce`/`exp` checks, or `VerifyIDTokenLocal()` / `VerifyIDToken()` for full verification |
 | `TokenResponse.DecodeLineProfilePlusPayload()` | Decodes ID token claims including [LINE Profile+](https://developers.line.biz/en/docs/partner-docs/line-profile-plus/) fields |
 
 ### Client Options
@@ -65,6 +66,7 @@ go get github.com/kkdai/line-login-sdk-go
 |--------|-------------|
 | `WithHTTPClient(c *http.Client)` | Use a custom `http.Client` (timeouts, proxies, retries, etc.) |
 | `WithEndpointBase(url string)` | Override the API base URL, e.g. for testing against a mock server |
+| `WithAuthEndpointBase(url string)` | Override the base URL used for authorization request URLs |
 
 ## Quick Start
 

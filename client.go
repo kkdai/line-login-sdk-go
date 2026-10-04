@@ -38,6 +38,7 @@ type Client struct {
 	endpointBase  *url.URL     // default APIEndpointBase
 	authBase      *url.URL     // default APIEndpointAuthBase
 	httpClient    *http.Client // default http.DefaultClient
+	jwks          jwksCache
 }
 
 // ClientOption type
