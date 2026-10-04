@@ -166,8 +166,8 @@ func TestVerifyIDToken(t *testing.T) {
 
 	client, _ := New(cID, cSecret)
 	ret, err := client.VerifyIDToken(iDToken, VerifyIDTokenRequestOptions{
-		nonce:  nonce,
-		userID: userID,
+		Nonce:  nonce,
+		UserID: userID,
 	}).Do()
 	if err != nil {
 		log.Println("err:", err)
